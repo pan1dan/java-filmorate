@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.Storage;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.util.*;
 
@@ -15,7 +17,7 @@ import java.util.*;
 @RequestMapping("/users")
 public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
-    Storage storage = new Storage();
+    Storage storage = new Storage(new InMemoryUserStorage(), new InMemoryFilmStorage());
     UserService userService;
 
     @Autowired

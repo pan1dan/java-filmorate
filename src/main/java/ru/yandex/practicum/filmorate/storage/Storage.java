@@ -6,8 +6,13 @@ import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 @Component
 public class Storage {
-    private static InMemoryUserStorage inMemoryUserStorage = new InMemoryUserStorage();
-    private static InMemoryFilmStorage inMemoryFilmStorage = new InMemoryFilmStorage();
+    private static InMemoryUserStorage inMemoryUserStorage;
+    private static InMemoryFilmStorage inMemoryFilmStorage;
+
+    public Storage(InMemoryUserStorage inMemoryUserStorage, InMemoryFilmStorage inMemoryFilmStorage) {
+        this.inMemoryUserStorage = inMemoryUserStorage;
+        this.inMemoryFilmStorage = inMemoryFilmStorage;
+    }
 
     public InMemoryUserStorage getInMemoryUserStorage() {
         return inMemoryUserStorage;
@@ -16,4 +21,5 @@ public class Storage {
     public InMemoryFilmStorage getInMemoryFilmStorage() {
         return inMemoryFilmStorage;
     }
+
 }

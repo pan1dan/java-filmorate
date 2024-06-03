@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 class UserControllerTest {
@@ -44,6 +46,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         User user2 = User.builder()
@@ -51,6 +54,7 @@ class UserControllerTest {
                 .login("dfffd")
                 .name("DFFFD")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user2);
         assertEquals(2, userController.getAllUsers().size());
@@ -63,6 +67,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         assertEquals(user1, userController.getAllUsers().toArray()[0]);
@@ -74,6 +79,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         assertThrowsExactly(ValidationException.class, () -> userController.addNewUser(user1));
     }
@@ -85,6 +91,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         assertThrowsExactly(ValidationException.class, () -> userController.addNewUser(user1));
     }
@@ -95,6 +102,7 @@ class UserControllerTest {
                 .email("2323@.ru")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         assertThrowsExactly(ValidationException.class, () -> userController.addNewUser(user1));
     }
@@ -106,6 +114,7 @@ class UserControllerTest {
                 .login("n d")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         assertThrowsExactly(ValidationException.class, () -> userController.addNewUser(user1));
     }
@@ -116,6 +125,7 @@ class UserControllerTest {
                 .email("2323@.ru")
                 .login("nd")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         User returnableUser = (User)userController.getAllUsers().toArray()[0];
@@ -128,6 +138,7 @@ class UserControllerTest {
                 .email("2323@.ru")
                 .login("nd")
                 .name("Na Da")
+                .friendsList(new HashSet<>())
                 .build();
         assertThrowsExactly(ValidationException.class, () -> userController.addNewUser(user1));
     }
@@ -139,6 +150,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.ofInstant(Instant.now(), zoneId).plusWeeks(1))
+                .friendsList(new HashSet<>())
                 .build();
         assertThrowsExactly(ValidationException.class, () -> userController.addNewUser(user1));
     }
@@ -150,6 +162,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         User user2 = User.builder()
@@ -158,6 +171,7 @@ class UserControllerTest {
                 .login("dfffd")
                 .name("DFFFD")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         userController.updateUser(user2);
@@ -171,12 +185,14 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         User user2 = User.builder()
                 .email("qweqwe@.gmail")
                 .login("dfffd")
                 .name("DFFFD")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         assertThrowsExactly(ValidationException.class, () -> userController.updateUser(user2));
@@ -189,6 +205,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         Long id = Long.parseLong("123");
         User user2 = User.builder()
@@ -197,9 +214,10 @@ class UserControllerTest {
                 .login("dfffd")
                 .name("DFFFD")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
-        assertThrowsExactly(ValidationException.class, () -> userController.updateUser(user2));
+        assertThrowsExactly(NotFoundException.class, () -> userController.updateUser(user2));
     }
 
     @Test
@@ -209,6 +227,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         User user2 = User.builder()
@@ -216,6 +235,7 @@ class UserControllerTest {
                 .login("dfffd")
                 .name("DFFFD")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         userController.updateUser(user2);
@@ -229,6 +249,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         User user2 = User.builder()
@@ -237,6 +258,7 @@ class UserControllerTest {
                 .login("dfffd")
                 .name("DFFFD")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         userController.updateUser(user2);
@@ -251,6 +273,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         User user2 = User.builder()
@@ -258,6 +281,7 @@ class UserControllerTest {
                 .email("567@fd.ru")
                 .name("DFFFD")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         userController.updateUser(user2);
@@ -272,6 +296,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         User user2 = User.builder()
@@ -280,6 +305,7 @@ class UserControllerTest {
                 .email("567@fd.ru")
                 .name("DFFFD")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         userController.updateUser(user2);
@@ -294,6 +320,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         User user2 = User.builder()
@@ -301,6 +328,7 @@ class UserControllerTest {
                 .login("DF")
                 .email("567@fd.ru")
                 .name("DFFFD")
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         userController.updateUser(user2);
@@ -315,6 +343,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         User user2 = User.builder()
@@ -323,6 +352,7 @@ class UserControllerTest {
                 .email("567@fd.ru")
                 .name("DFFFD")
                 .birthday(LocalDate.of(3000,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         userController.updateUser(user2);
@@ -337,6 +367,7 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         User user2 = User.builder()
@@ -344,6 +375,7 @@ class UserControllerTest {
                 .email("567@fd.ru")
                 .login("DF")
                 .birthday(LocalDate.of(2020,2,20))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         userController.updateUser(user2);
@@ -358,12 +390,14 @@ class UserControllerTest {
                 .login("nd")
                 .name("Na Da")
                 .birthday(LocalDate.of(1999,12,19))
+                .friendsList(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         User user2 = User.builder()
                 .id(id)
                 .email("567@fd.ru")
                 .birthday(LocalDate.of(2020,2,20))
+                .friendsList(new HashSet<>())
                 .build();
         userController.addNewUser(user1);
         userController.updateUser(user2);
