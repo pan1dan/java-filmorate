@@ -11,7 +11,6 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 @ConfigurationPropertiesScan
 public class FilmorateApplication {
 	public static void main(String[] args) {
-		((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.TRACE);
 		SpringApplication.run(FilmorateApplication.class, args);
 	}
 
