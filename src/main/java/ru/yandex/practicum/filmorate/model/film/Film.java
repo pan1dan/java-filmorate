@@ -1,9 +1,10 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.model.film;
 
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -15,4 +16,6 @@ public class Film {
     LocalDate releaseDate;
     Integer duration;
     Set<Long> likesFromUsersList;
+    List<Genres> genre;
+    MPA ratingMPA;
 }
