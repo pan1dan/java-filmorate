@@ -1,21 +1,25 @@
 package ru.yandex.practicum.filmorate.model.film;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.model.UserLikesFilms;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Film {
     Long id;
     String name;
     String description;
     LocalDate releaseDate;
     Integer duration;
-    Set<Long> likesFromUsersList;
-    List<Genres> genre;
-    MPA ratingMPA;
+    Set<UserLikesFilms> userLikesFilms;
+    Set<Genre> genres;
+    Mpa mpa;
 }

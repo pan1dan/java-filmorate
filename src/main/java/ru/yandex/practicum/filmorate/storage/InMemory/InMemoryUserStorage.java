@@ -1,11 +1,14 @@
-package ru.yandex.practicum.filmorate.storage.user;
+package ru.yandex.practicum.filmorate.storage.InMemory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.model.user.UserFriends;
+import ru.yandex.practicum.filmorate.storage.model.UserStorage;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -13,6 +16,7 @@ import java.time.ZoneId;
 import java.util.*;
 
 @Component
+@Qualifier("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
     Map<Long, User> users = new HashMap<>();
     ZoneId zoneId = ZoneId.of("Europe/Moscow");
@@ -62,7 +66,7 @@ public class InMemoryUserStorage implements UserStorage {
         log.debug("Присвоение id новому пользователю");
         user.setId(getNextId());
         log.info("Добавлен новый пользователь");
-        user.setFriendsList(new HashSet<>());
+        user.setUserFriends(new UserFriends());
         users.put(user.getId(), user);
         log.debug("Возврат пользователя в теле ответа: {}", users.get(user.getId()));
         return users.get(user.getId());
@@ -115,7 +119,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     public List<User> getUserFriendsInList(Long userId) {
         List<User> userFriendsInList = new ArrayList<>();
-        for (Long id : users.get(userId).getFriendsList()) {
+        for (Long id : users.get(userId).getUserFriends().getFriendsIds()) {
             userFriendsInList.add(users.get(id));
         }
         return userFriendsInList;

@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemory.InMemoryFilmStorage;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -18,7 +18,7 @@ class FilmControllerTest {
 
     @BeforeEach
     void newFilmController() {
-        filmController = new FilmController(new InMemoryFilmStorage(), new FilmService());
+        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(), null));
     }
 
     @Test
@@ -151,7 +151,7 @@ class FilmControllerTest {
                 .description("Blablabla")
                 .releaseDate(LocalDate.of(2000, 12, 12))
                 .duration(300)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         Film film2 = Film.builder()
@@ -160,7 +160,7 @@ class FilmControllerTest {
                 .description("bybyby")
                 .releaseDate(LocalDate.of(7777, 7, 7))
                 .duration(777)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
 
         filmController.addNewFilm(film1);
@@ -175,7 +175,7 @@ class FilmControllerTest {
                 .description("Blablabla")
                 .releaseDate(LocalDate.of(2000, 12, 12))
                 .duration(300)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         Film film2 = Film.builder()
@@ -183,7 +183,7 @@ class FilmControllerTest {
                 .description("bybyby")
                 .releaseDate(LocalDate.of(7777, 7, 7))
                 .duration(777)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         filmController.addNewFilm(film1);
         filmController.updateFilm(film2);
@@ -198,7 +198,7 @@ class FilmControllerTest {
                 .description("Blablabla")
                 .releaseDate(LocalDate.of(2000, 12, 12))
                 .duration(300)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         Film film2 = Film.builder()
@@ -207,7 +207,7 @@ class FilmControllerTest {
                 .description("bybyby")
                 .releaseDate(LocalDate.of(7777, 7, 7))
                 .duration(777)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         filmController.addNewFilm(film1);
         filmController.updateFilm(film2);
@@ -222,7 +222,7 @@ class FilmControllerTest {
                 .description("Blablabla")
                 .releaseDate(LocalDate.of(2000, 12, 12))
                 .duration(300)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         Film film2 = Film.builder()
@@ -230,7 +230,7 @@ class FilmControllerTest {
                 .name("qwe")
                 .releaseDate(LocalDate.of(7777, 7, 7))
                 .duration(777)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         filmController.addNewFilm(film1);
         filmController.updateFilm(film2);
@@ -245,7 +245,7 @@ class FilmControllerTest {
                 .description("Blablabla")
                 .releaseDate(LocalDate.of(2000, 12, 12))
                 .duration(300)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         Film film2 = Film.builder()
@@ -254,7 +254,7 @@ class FilmControllerTest {
                 .description("1".repeat(201))
                 .releaseDate(LocalDate.of(7777, 7, 7))
                 .duration(777)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         filmController.addNewFilm(film1);
         filmController.updateFilm(film2);
@@ -269,7 +269,7 @@ class FilmControllerTest {
                 .description("Blablabla")
                 .releaseDate(LocalDate.of(2000, 12, 12))
                 .duration(300)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         Film film2 = Film.builder()
@@ -277,7 +277,7 @@ class FilmControllerTest {
                 .name("qwe")
                 .description("bybyby")
                 .duration(777)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         filmController.addNewFilm(film1);
         filmController.updateFilm(film2);
@@ -292,7 +292,7 @@ class FilmControllerTest {
                 .description("Blablabla")
                 .releaseDate(LocalDate.of(2000, 12, 12))
                 .duration(300)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         Film film2 = Film.builder()
@@ -301,7 +301,7 @@ class FilmControllerTest {
                 .description("bybyby")
                 .releaseDate(LocalDate.of(777, 7, 7))
                 .duration(777)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         filmController.addNewFilm(film1);
         filmController.updateFilm(film2);
@@ -316,7 +316,7 @@ class FilmControllerTest {
                 .description("Blablabla")
                 .releaseDate(LocalDate.of(2000, 12, 12))
                 .duration(300)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         Film film2 = Film.builder()
@@ -324,7 +324,7 @@ class FilmControllerTest {
                 .name("qwe")
                 .description("bybyby")
                 .releaseDate(LocalDate.of(7777, 7, 7))
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         filmController.addNewFilm(film1);
         filmController.updateFilm(film2);
@@ -339,7 +339,7 @@ class FilmControllerTest {
                 .description("Blablabla")
                 .releaseDate(LocalDate.of(2000, 12, 12))
                 .duration(300)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         Long id = Long.parseLong("1");
         Film film2 = Film.builder()
@@ -348,7 +348,7 @@ class FilmControllerTest {
                 .description("bybyby")
                 .releaseDate(LocalDate.of(7777, 7, 7))
                 .duration(-100)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         filmController.addNewFilm(film1);
         filmController.updateFilm(film2);
@@ -363,7 +363,7 @@ class FilmControllerTest {
                 .description("Blablabla")
                 .releaseDate(LocalDate.of(2000, 12, 12))
                 .duration(300)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         filmController.addNewFilm(film1);
         Long id = Long.parseLong("123");
@@ -373,7 +373,7 @@ class FilmControllerTest {
                 .description("bybyby")
                 .releaseDate(LocalDate.of(7777, 7, 7))
                 .duration(777)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         assertThrowsExactly(NotFoundException.class, () -> filmController.updateFilm(film2));
     }
@@ -385,7 +385,7 @@ class FilmControllerTest {
                 .description("Blablabla")
                 .releaseDate(LocalDate.of(2000, 12, 12))
                 .duration(300)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         filmController.addNewFilm(film1);
         Film film2 = Film.builder()
@@ -393,7 +393,7 @@ class FilmControllerTest {
                 .description("bybyby")
                 .releaseDate(LocalDate.of(7777, 7, 7))
                 .duration(777)
-                .likesFromUsersList(new HashSet<>())
+                .userLikesFilms(new HashSet<>())
                 .build();
         assertThrowsExactly(ValidationException.class, () -> filmController.updateFilm(film2));
     }

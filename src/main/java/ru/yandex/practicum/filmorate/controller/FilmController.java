@@ -7,22 +7,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.Storage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
-    Storage storage = new Storage(new InMemoryUserStorage(), new InMemoryFilmStorage());
     FilmService filmService;
 
     @Autowired
-    public FilmController(InMemoryFilmStorage inMemoryFilmStorage, FilmService filmService) {
+    public FilmController(FilmService filmService) {
         this.filmService = filmService;
     }
 
@@ -30,51 +25,51 @@ public class FilmController {
     @ResponseStatus(HttpStatus.OK)
     public List<Film> getAllFilms() {
         log.info("GET /films");
-        return storage.getInMemoryFilmStorage().getAllFilmsFromStorage();
+        return filmService.getAllFilms();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film addNewFilm(@RequestBody Film film) {
         log.info("POST /films");
-        return storage.getInMemoryFilmStorage().addNewFilmToStorage(film);
+        return filmService.addNewFilm(film);
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public Film updateFilm(@RequestBody Film newFilm) {
         log.info("PUT /films");
-        return storage.getInMemoryFilmStorage().updateFilmInStorage(newFilm);
+        return filmService.updateFilm(newFilm);
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Film getFilmById(@PathVariable(name = "id") Long filmId) {
         log.info("GET /films/{}", filmId);
-        return storage.getInMemoryFilmStorage().getFilmByIdFromStorage(filmId);
+        return filmService.getFilmById(filmId);
     }
 
     @PutMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public Set<Long> userLikeFilm(@PathVariable(name = "id") Long filmId,
+    public void userLikeFilm(@PathVariable(name = "id") Long filmId,
                                   @PathVariable(name = "userId") Long userId) {
         log.info("PUT /films/{}/like/{}", filmId, userId);
-        return filmService.addUserIdInFilmLikesList(filmId, userId, storage);
+        filmService.addUserIdInFilmLikesList(filmId, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public Set<Long> userDeleteLikeOnFilm(@PathVariable(name = "id") Long filmId,
+    public void userDeleteLikeOnFilm(@PathVariable(name = "id") Long filmId,
                                           @PathVariable(name = "userId") Long userId) {
         log.info("DELETE /films/{}/like/{}", filmId, userId);
-        return filmService.deleteUserIdFromFilmLikesList(filmId, userId, storage);
+        filmService.deleteUserIdFromFilmLikesList(filmId, userId);
     }
 
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
     public List<Film> getTopFilms(@RequestParam(defaultValue = "10") Integer count) {
         log.info("GET /films/popular?count={}", count);
-        return filmService.getTopFilmsByLikes(count, storage.getInMemoryFilmStorage());
+        return filmService.getTopFilmsByLikes(count);
     }
 
 }

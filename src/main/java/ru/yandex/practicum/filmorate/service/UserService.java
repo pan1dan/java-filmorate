@@ -2,9 +2,12 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.user.User;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.model.UserFriendsStorage;
+import ru.yandex.practicum.filmorate.storage.model.UserStorage;
 
 import java.util.List;
 import java.util.Set;
@@ -13,78 +16,71 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final UserStorage userStorage;
+    private final UserFriendsStorage userFriendsStorage;
 
-    public Set<Long> addNewFriendIdToUserFriendList(Long userId,
-                                                  Long friendId,
-                                                  InMemoryUserStorage inMemoryUserStorage) {
-        log.info("Начало работы метода по добавлению нового друга с id = {} " +
-                "в лист пользователя c id = {}", friendId, userId);
-        log.debug("Получение пользователя из хранилища");
-        User user = inMemoryUserStorage.getUserByIdFromStorage(userId);
-        log.debug("Получение добавляемого пользователя из хранилища");
-        User friendUser = inMemoryUserStorage.getUserByIdFromStorage(friendId);
-        log.debug("Получение листа c id друзей пользователя");
-        Set<Long> newUserFriendsList = user.getFriendsList();
-        log.debug("Получение листа c id друзей добавляемого пользователя");
-        Set<Long> newUserFriendFriendsList = friendUser.getFriendsList();
-        log.debug("Добавление id нового друга в лист c id друзей пользователя");
-        newUserFriendsList.add(friendId);
-        log.debug("Добавление id пользователя в лист c id друзей добавляемого пользователя");
-        newUserFriendFriendsList.add(userId);
-        log.debug("Сохранение обновленного листа c id друзей пользователя");
-        user.setFriendsList(newUserFriendsList);
-        log.debug("Сохранение обновленного листа c id друзей добавляемого пользователя");
-        friendUser.setFriendsList(newUserFriendFriendsList);
-        log.info("Возвращение обновленного листа с id друзей: {}", user.getFriendsList());
-        return user.getFriendsList();
+    @Autowired
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("userFriendsDbStorage") UserFriendsStorage userFriendsStorage) {
+        this.userStorage = userStorage;
+        this.userFriendsStorage = userFriendsStorage;
     }
 
-    public Set<Long> deleteFriendIdFromUserFriendList(Long userId,
-                                               Long friendId,
-                                               InMemoryUserStorage inMemoryUserStorage) {
-        log.info("Начало работы метода по удаление друга с id = {}" +
-                "из листа пользователя c id = {}", friendId, userId);
-        log.debug("Получение пользователя из хранилища");
-        User user = inMemoryUserStorage.getUserByIdFromStorage(userId);
-        log.debug("Получение удаляемого пользователя из хранилища");
-        User friendUser = inMemoryUserStorage.getUserByIdFromStorage(friendId);
-        log.debug("Получение листа c id друзей пользователя");
-        Set<Long> newUserFriendsList = user.getFriendsList();
-        log.debug("Получение листа c id друзей добавляемого пользователя");
-        Set<Long> newUserFriendFriendsList = friendUser.getFriendsList();
-        log.debug("Удаление id друга из листа c id друзей пользователя");
-        newUserFriendsList.remove(friendId);
-        log.debug("Удаление id пользователя из листа c id друзей удаляемого пользователя");
-        newUserFriendFriendsList.remove(userId);
-        log.debug("Сохранение обновленного листа c id друзей пользователя");
-        user.setFriendsList(newUserFriendsList);
-        log.debug("Сохранение обновленного листа c id друзей удаляемого пользователя");
-        friendUser.setFriendsList(newUserFriendFriendsList);
-        log.info("Возвращение обновленного листа с id друзей: {}", user.getFriendsList());
-        return user.getFriendsList();
+    public List<User> getAllUsers() {
+        return userStorage.getAllUsersFromStorage();
     }
 
-    public List<User> getUserListFriends(Long userId, InMemoryUserStorage inMemoryUserStorage) {
+    public User addNewUser(User user) {
+        return userStorage.addNewUserInStorage(user);
+    }
+
+    public User updateUser(User newUser) {
+        return userStorage.updateUserInStorage(newUser);
+    }
+
+    public User getUserById(Long userId) {
+        return userStorage.getUserByIdFromStorage(userId);
+    }
+
+    public void addNewFriendIdToUserFriendList(Long userId,
+                                                  Long friendId) {
+        userStorage.getUserByIdFromStorage(userId);
+        userStorage.getUserByIdFromStorage(friendId);
+        userFriendsStorage.addUserFriend(userId, friendId);
+    }
+
+    public void deleteFriendIdFromUserFriendList(Long userId,
+                                                      Long friendId) {
+        userStorage.getUserByIdFromStorage(userId);
+        userStorage.getUserByIdFromStorage(friendId);
+        userFriendsStorage.deleteUserFriends(userId, friendId);
+    }
+
+    public List<User> getUserListFriends(Long userId) {
         log.info("Возвращение листа друзей пользователя: {}",
-                inMemoryUserStorage.getUserByIdFromStorage(userId).getFriendsList());
-        return inMemoryUserStorage.getUserFriendsInList(userId);
+                userStorage.getUserByIdFromStorage(userId).getUserFriends().getFriendsIds());
+        return userStorage.getUserByIdFromStorage(userId).getUserFriends().getFriendsIds()
+                .stream()
+                .map(userStorage::getUserByIdFromStorage)
+                .toList();
     }
 
     public List<User> getCommonFriendListTwoUsers(Long userId,
-                                                 Long otherId,
-                                                 InMemoryUserStorage inMemoryUserStorage) {
+                                                  Long otherId) {
         log.info("Начало работы метода по поиску общих друзей: пользователь с id = {} и другой " +
                 "пользователь с id = {}", userId, otherId);
         log.debug("Получение пользователя из хранилища");
-        User user = inMemoryUserStorage.getUserByIdFromStorage(userId);
+        User user = userStorage.getUserByIdFromStorage(userId);
         log.debug("Получение другого пользователя из хранилища");
-        User otherUser = inMemoryUserStorage.getUserByIdFromStorage(otherId);
+        User otherUser = userStorage.getUserByIdFromStorage(otherId);
         log.info("Возвращение списка общих друзей пользователей");
-        Set<Long> idsCommonFriends = user.getFriendsList()
+        Set<Long> idsCommonFriends = user.getUserFriends().getFriendsIds()
                 .stream()
-                .filter(id -> otherUser.getFriendsList().contains(id))
+                .filter(id -> otherUser.getUserFriends().getFriendsIds().contains(id))
                 .collect(Collectors.toSet());
-        return inMemoryUserStorage.getUserListByListIds(idsCommonFriends);
-
+        return idsCommonFriends
+                .stream()
+                .map(userStorage::getUserByIdFromStorage)
+                .toList();
     }
 }
