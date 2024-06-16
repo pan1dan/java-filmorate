@@ -106,6 +106,7 @@ public class FilmDbStorage implements FilmStorage {
                     newFilm.getMpa().getId(),
                     newFilm.getId());
             if (rowsUpdated == 0) {
+                log.warn("Фильм с id " + newFilm.getId() + " не найден");
                 throw new NotFoundException("Фильм с id " + newFilm.getId() + " не найден");
             }
 

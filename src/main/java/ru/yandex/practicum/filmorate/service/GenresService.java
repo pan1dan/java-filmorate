@@ -22,10 +22,12 @@ public class GenresService {
     }
 
     public List<Genre> getAllGenres() {
+        log.info("Начало работы метода по получению списка всех жанров");
         return genresStorage.getAllGenres();
     }
 
     public Genre getGenreNameById(int genreId) {
+        log.info("Начало работы метода по получению жанра по его id = {}", genreId);
         return genresStorage.getGenreNameById(genreId);
     }
 }

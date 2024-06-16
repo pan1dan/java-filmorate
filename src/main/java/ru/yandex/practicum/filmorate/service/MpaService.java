@@ -21,10 +21,12 @@ public class MpaService {
     }
 
     public List<Mpa> getAllFilmsMpaRatings() {
+        log.info("Начало работы метода по получению всех рейтингов mpa");
         return filmRatingMpaStorage.getAllMpa();
     }
 
     public Mpa geRatingMpaById(int mpaId) {
+        log.info("Начало работы метода по получению рейтинга mpa по его id = {}", mpaId);
         return filmRatingMpaStorage.getMpaById(mpaId);
     }
 }

@@ -27,23 +27,29 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
+        log.info("Начало работы метода по получению всех пользователей");
         return userStorage.getAllUsersFromStorage();
     }
 
     public User addNewUser(User user) {
+        log.info("Начало работы метода по добавлению пользователя: {}", user);
         return userStorage.addNewUserInStorage(user);
     }
 
     public User updateUser(User newUser) {
+        log.info("Начало работы метода по обновлению пользователя: {}", newUser);
         return userStorage.updateUserInStorage(newUser);
     }
 
     public User getUserById(Long userId) {
+        log.info("Начало работы метода по получению пользователя по id = {}", userId);
         return userStorage.getUserByIdFromStorage(userId);
     }
 
     public void addNewFriendIdToUserFriendList(Long userId,
                                                   Long friendId) {
+        log.info("Начало работы метода по добавлению в список друзей пользователя с id = {} другого " +
+                "пользователя с id = {}", userId, friendId);
         userStorage.getUserByIdFromStorage(userId);
         userStorage.getUserByIdFromStorage(friendId);
         userFriendsStorage.addUserFriend(userId, friendId);
@@ -51,6 +57,8 @@ public class UserService {
 
     public void deleteFriendIdFromUserFriendList(Long userId,
                                                       Long friendId) {
+        log.info("Начало работы метода по удалению из списка друзей пользователя с id = {} другого " +
+                "пользователя с id = {}", userId, friendId);
         userStorage.getUserByIdFromStorage(userId);
         userStorage.getUserByIdFromStorage(friendId);
         userFriendsStorage.deleteUserFriends(userId, friendId);

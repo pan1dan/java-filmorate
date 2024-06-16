@@ -108,6 +108,7 @@ public class UserDbStorage implements UserStorage {
                     newUser.getId());
 
             if (rowsUpdated == 0) {
+                log.warn("Пользователь с id " + newUser.getId() + " не найден");
                 throw new NotFoundException("Пользователь с id " + newUser.getId() + " не найден");
             }
         } catch (Exception e) {
