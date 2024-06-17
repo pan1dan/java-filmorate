@@ -2,9 +2,9 @@ package ru.yandex.practicum.filmorate.model.user;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.UserLikesFilms;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.Set;
 
 @Data
@@ -15,6 +15,6 @@ public class User {
     String login;
     String name;
     LocalDate birthday;
-    Set<Long> friendsList;
-    HashMap<Long, friendshipStatus> friendsStatusList;
+    UserFriends userFriends;
+    Set<UserLikesFilms> likesFilms;
 }

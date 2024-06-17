@@ -1,12 +1,14 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.storage.InMemory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.storage.model.FilmStorage;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+@Qualifier("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
     private static final Logger log = LoggerFactory.getLogger(InMemoryFilmStorage.class);
     private static final LocalDate BIRTHDAY_OF_THE_MOVIE = LocalDate.of(1895, 12, 28);
@@ -29,8 +32,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film addNewFilmToStorage(Film film) {
         if (film == null) {
-            log.warn("Получено пустое запроса");
-            throw new ValidationException("Получено пустое запроса");
+            log.warn("Получено пустое тело запроса");
+            throw new ValidationException("Получено пустое тело запроса");
         }
         log.debug("Получен объект: {}", film);
         if (film.getName() == null || film.getName().isBlank()) {
@@ -58,7 +61,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         log.debug("Присвоение id новому фильму");
         film.setId(getNextId());
-        film.setLikesFromUsersList(new HashSet<>());
+        film.setUserLikesFilms(new HashSet<>());
         log.info("Добавлен новый фильм");
         films.put(film.getId(), film);
         log.debug("Возврат фильма: {}", films.get(film.getId()));

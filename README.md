@@ -1,7 +1,7 @@
 # java-filmorate
 Template repository for Filmorate project.
 
-![ER-диаграмма базы данных проекта](https://github.com/pan1dan/java-filmorate/assets/146234042/97108d06-8da0-4de0-8303-53496017fb1e)
+![ER-диаграмма базы данных проекта](https://github.com/pan1dan/java-filmorate/assets/146234042/2a8b02c0-393f-437a-ad8a-18028a20033d)
 
 **Примеры запросов**
 
