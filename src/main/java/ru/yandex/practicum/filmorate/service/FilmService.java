@@ -71,4 +71,9 @@ public class FilmService {
                 .limit(count)
                 .collect(Collectors.toList());
     }
+
+//    public List<Film> getTopDirectorFilmsByLikesOrYear(Long directorId, String sortField) {
+//        log.info("Начало работы метода по возвращение топа фильмов режиссера");
+//
+//    }
 }
