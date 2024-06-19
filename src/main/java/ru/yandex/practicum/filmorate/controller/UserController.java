@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -19,6 +19,13 @@ public class UserController {
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUserById(@PathVariable(name = "id") Long userId) {
+        log.info("DELETE /users/{}", userId);
+        userService.deleteUserById(userId);
     }
 
 
@@ -61,7 +68,7 @@ public class UserController {
     @DeleteMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteFriend(@PathVariable(name = "id") Long userId,
-                                  @PathVariable(name = "friendId") Long friendId) {
+                             @PathVariable(name = "friendId") Long friendId) {
         log.info("DELETE /users/{}/friends/{}", userId, friendId);
         userService.deleteFriendIdFromUserFriendList(userId, friendId);
     }

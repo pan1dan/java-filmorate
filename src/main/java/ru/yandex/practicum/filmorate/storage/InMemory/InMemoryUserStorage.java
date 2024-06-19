@@ -23,6 +23,16 @@ public class InMemoryUserStorage implements UserStorage {
     private static final Logger log = LoggerFactory.getLogger(InMemoryUserStorage.class);
 
     @Override
+    public void deleteUserByIdFromStorage(Long userId) {
+        if (!users.containsKey(userId)) {
+            log.warn("Пользователь с переданным id = {} не найден", userId);
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+        }
+        users.remove(userId);
+        log.info("Пользователь с id = {} удален из хранилища", userId);
+    }
+
+    @Override
     public List<User> getAllUsersFromStorage() {
         log.debug("Возврат списка всех пользователей: {}", users.values());
         return users.values().stream().toList();

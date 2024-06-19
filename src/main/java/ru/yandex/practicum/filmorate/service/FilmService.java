@@ -25,6 +25,11 @@ public class FilmService {
         this.usersLikesFilmsStorage = usersLikesFilmsStorage;
     }
 
+    public void deleteFilmById(Long filmId) {
+        log.info("Начало работы метода по удалению фильма с id = {}", filmId);
+        filmStorage.deleteFilmByIdFromStorage(filmId);
+    }
+
     public List<Film> getAllFilms() {
         log.info("Начало работы метода по получению всех фильмов");
         return filmStorage.getAllFilmsFromStorage();
@@ -62,7 +67,7 @@ public class FilmService {
         return filmStorage.getAllFilmsFromStorage()
                 .stream()
                 .sorted((film2, film1) -> Integer.compare(usersLikesFilmsStorage.getLikesCount(film1.getId()),
-                                                            usersLikesFilmsStorage.getLikesCount(film2.getId())))
+                        usersLikesFilmsStorage.getLikesCount(film2.getId())))
                 .limit(count)
                 .collect(Collectors.toList());
     }

@@ -26,6 +26,11 @@ public class UserService {
         this.userFriendsStorage = userFriendsStorage;
     }
 
+    public void deleteUserById(Long userId) {
+        log.info("Начало работы метода по удалению пользователя с id = {}", userId);
+        userStorage.deleteUserByIdFromStorage(userId);
+    }
+
     public List<User> getAllUsers() {
         log.info("Начало работы метода по получению всех пользователей");
         return userStorage.getAllUsersFromStorage();
@@ -47,7 +52,7 @@ public class UserService {
     }
 
     public void addNewFriendIdToUserFriendList(Long userId,
-                                                  Long friendId) {
+                                               Long friendId) {
         log.info("Начало работы метода по добавлению в список друзей пользователя с id = {} другого " +
                 "пользователя с id = {}", userId, friendId);
         userStorage.getUserByIdFromStorage(userId);
@@ -56,7 +61,7 @@ public class UserService {
     }
 
     public void deleteFriendIdFromUserFriendList(Long userId,
-                                                      Long friendId) {
+                                                 Long friendId) {
         log.info("Начало работы метода по удалению из списка друзей пользователя с id = {} другого " +
                 "пользователя с id = {}", userId, friendId);
         userStorage.getUserByIdFromStorage(userId);

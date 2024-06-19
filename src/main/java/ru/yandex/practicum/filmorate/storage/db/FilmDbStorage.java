@@ -37,11 +37,26 @@ public class FilmDbStorage implements FilmStorage {
     FilmRatingMpaStorage filmRatingMpaStorage;
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate,
-                         @Qualifier("genresDbStorage")GenresStorage genresStorage,
+                         @Qualifier("genresDbStorage") GenresStorage genresStorage,
                          @Qualifier("filmDbRatingMpaStorage") FilmRatingMpaStorage filmRatingMpaStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.genresStorage = genresStorage;
         this.filmRatingMpaStorage = filmRatingMpaStorage;
+    }
+
+    @Override
+    public void deleteFilmByIdFromStorage(Long filmId) {
+        try {
+            String sql = "DELETE FROM films WHERE film_id = ?";
+            int rowsDeleted = jdbcTemplate.update(sql, filmId);
+            if (rowsDeleted == 0) {
+                log.warn("Фильм с id " + filmId + " не найден");
+                throw new NotFoundException("Фильм с id " + filmId + " не найден");
+            }
+        } catch (Exception e) {
+            log.error("Ошибка при удалении фильма с id " + filmId, e);
+            throw new RuntimeException("Ошибка при удалении фильма с id " + filmId, e);
+        }
     }
 
     @Override
@@ -77,7 +92,7 @@ public class FilmDbStorage implements FilmStorage {
 
                 for (Genre genre : film.getGenres()) {
                     insert2.execute(new MapSqlParameterSource("film_id", filmId)
-                                                            .addValue("genre_id", genre.getId()));
+                            .addValue("genre_id", genre.getId()));
                 }
             }
 
@@ -125,8 +140,8 @@ public class FilmDbStorage implements FilmStorage {
                 for (UserLikesFilms userLikesFilms : newFilm.getUserLikesFilms()) {
                     jdbcTemplate.update("INSERT INTO users_likes_films(film_id, user_id)" +
                                     "VALUES(?, ?)",
-                                    userLikesFilms.getFilmId(),
-                                    userLikesFilms.getUserId());
+                            userLikesFilms.getFilmId(),
+                            userLikesFilms.getUserId());
                 }
             }
 
@@ -172,14 +187,14 @@ public class FilmDbStorage implements FilmStorage {
                     return resultSet.getInt("genre_id");
                 });
         Set<Genre> filmGenres = genresIds.stream()
-                        .map(id -> {
-                            try {
-                                return genresStorage.getGenreNameById(id);
-                            } catch (Exception e) {
-                                log.warn("Ошибка при получении жанров по их id", e);
-                                throw new RuntimeException(e);
-                            }
-                        }).collect(Collectors.toSet());
+                .map(id -> {
+                    try {
+                        return genresStorage.getGenreNameById(id);
+                    } catch (Exception e) {
+                        log.warn("Ошибка при получении жанров по их id", e);
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toSet());
         film.setGenres(filmGenres);
 
         String sql2 = "SELECT user_id " +

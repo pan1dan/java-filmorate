@@ -39,6 +39,21 @@ public class UserDbStorage implements UserStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Override
+    public void deleteUserByIdFromStorage(Long userId) {
+        try {
+            String sql = "DELETE FROM users WHERE user_id = ?";
+            int rowsDeleted = jdbcTemplate.update(sql, userId);
+            if (rowsDeleted == 0) {
+                log.warn("Пользователь с id " + userId + " не найден");
+                throw new NotFoundException("Пользователь с id " + userId + " не найден");
+            }
+        } catch (Exception e) {
+            log.error("Ошибка при удалении пользователя с id " + userId, e);
+            throw new RuntimeException("Ошибка при удалении пользователя с id " + userId, e);
+        }
+    }
+
 
     @Override
     public List<User> getAllUsersFromStorage() {
@@ -70,7 +85,7 @@ public class UserDbStorage implements UserStorage {
             if (user.getUserFriends() != null && !user.getUserFriends().getFriendsIds().isEmpty()) {
                 for (Long id : user.getUserFriends().getFriendsIds()) {
                     jdbcTemplate.update("INSERT INTO user_friends(user_id, status, friend_id) " +
-                            "VALUES (?, ?, ?)",
+                                    "VALUES (?, ?, ?)",
                             user.getId(),
                             id,
                             user.getUserFriends().getFriendsStatusList().get(id));
@@ -151,7 +166,7 @@ public class UserDbStorage implements UserStorage {
         Set<UserLikesFilms> userLikesFilms = filmIds.stream()
                 .map(id -> {
                     try {
-                        return new UserLikesFilms(rs.getLong("user_id"), (long)id);
+                        return new UserLikesFilms(rs.getLong("user_id"), (long) id);
                     } catch (SQLException e) {
                         log.warn("Ошибка при создании объекта UserLikesFilms", e);
                         throw new RuntimeException(e);
@@ -167,7 +182,7 @@ public class UserDbStorage implements UserStorage {
         List<Long> friendsIds = jdbcTemplate.query(sql2,
                 (resultSet, rowNumber) -> {
                     friendsStatusList.put(resultSet.getLong("friend_id"),
-                                          FriendshipStatus.valueOf(resultSet.getString("status")));
+                            FriendshipStatus.valueOf(resultSet.getString("status")));
                     return resultSet.getLong("friend_id");
                 });
 

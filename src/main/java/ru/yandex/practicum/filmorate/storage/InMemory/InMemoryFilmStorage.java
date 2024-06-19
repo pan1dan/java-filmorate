@@ -24,6 +24,16 @@ public class InMemoryFilmStorage implements FilmStorage {
     Map<Long, Film> films = new HashMap<>();
 
     @Override
+    public void deleteFilmByIdFromStorage(Long filmId) {
+        if (!films.containsKey(filmId)) {
+            log.warn("Фильм с переданным id = {} не найден", filmId);
+            throw new NotFoundException("Фильм с id = " + filmId + " не найден");
+        }
+        films.remove(filmId);
+        log.info("Фильм с id = {} удален из хранилища", filmId);
+    }
+
+    @Override
     public List<Film> getAllFilmsFromStorage() {
         log.debug("Возврат списка всех фильмов: {}", films.values());
         return films.values().stream().toList();
