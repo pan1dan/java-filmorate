@@ -23,6 +23,18 @@ public class UserServiceImpl implements UserService {
     private final UserFriendsStorage userFriendsStorage;
     private final UserEventStorage userEventDbStorage;
 
+    @Autowired
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("userFriendsDbStorage") UserFriendsStorage userFriendsStorage) {
+        this.userStorage = userStorage;
+        this.userFriendsStorage = userFriendsStorage;
+    }
+
+    public void deleteUserById(Long userId) {
+        log.info("Начало работы метода по удалению пользователя с id = {}", userId);
+        userStorage.deleteUserByIdFromStorage(userId);
+    }
+
     @Override
     public List<User> getAllUsers() {
         log.info("Начало работы метода по получению всех пользователей");

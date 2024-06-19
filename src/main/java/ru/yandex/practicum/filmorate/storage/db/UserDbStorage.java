@@ -37,10 +37,6 @@ public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     ZoneId zoneId = ZoneId.of("Europe/Moscow");
 
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
     @Override
     public void deleteUserByIdFromStorage(Long userId) {
         try {
