@@ -24,6 +24,8 @@ import ru.yandex.practicum.filmorate.storage.model.GenresStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -134,6 +136,11 @@ public class FilmDbStorage implements FilmStorage {
                             newFilm.getId(),
                             genre.getId());
                 }
+                List<Genre> sortedGenres = newFilm.getGenres()
+                        .stream()
+                        .sorted(Comparator.comparingInt(Genre::getId))
+                        .toList();
+                newFilm.setGenres(new LinkedHashSet<>(sortedGenres));
             }
 
             jdbcTemplate.update("DELETE FROM users_likes_films WHERE film_id = ? ", newFilm.getId());
