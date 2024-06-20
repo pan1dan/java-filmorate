@@ -105,7 +105,7 @@ public class FilmDbStorage implements FilmStorage {
                         .withTableName("film_director")
                         .usingColumns("film_id", "director_id");
 
-                for(Director director : film.getDirectors()) {
+                for (Director director : film.getDirectors()) {
                     insert3.execute(new MapSqlParameterSource("film_id", filmId)
                                                             .addValue("director_id", director.getId()));
                 }

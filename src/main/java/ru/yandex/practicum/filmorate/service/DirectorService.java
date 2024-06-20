@@ -13,6 +13,7 @@ import java.util.List;
 public class DirectorService {
     private static final Logger log = LoggerFactory.getLogger(DirectorService.class);
     DirectorStorage directorStorage;
+
     public DirectorService(@Qualifier("directorDbStorage") DirectorStorage directorStorage) {
         this.directorStorage = directorStorage;
     }
