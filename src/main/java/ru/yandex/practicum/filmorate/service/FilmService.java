@@ -41,7 +41,7 @@ public class FilmService {
 
     public List<Film> getAllFilms() {
         log.info("Начало работы метода по получению всех фильмов");
-        return filmStorage.getAllFilm();
+        return filmStorage.getAllFilms();
     }
 
     public Film addNewFilm(Film film) {
@@ -71,10 +71,11 @@ public class FilmService {
         usersLikesFilmsStorage.deleteLikeFilm(filmId, userId);
     }
 
-    public List<Film> getTopFilmsByLikes(Integer count) {
-        log.info("Начало работы метода по возвращение топа фильмов");
-        return filmStorage.getAllFilm()
+    public List<Film> getTopFilmsByLikes(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getAllFilms()
                 .stream()
+                .filter(film -> (genreId == null || film.getGenres().stream().anyMatch(genre -> genre.getId() == genreId)) &&
+                        (year == null || film.getReleaseDate().getYear() == year))
                 .sorted((film2, film1) -> Integer.compare(usersLikesFilmsStorage.getLikesCount(film1.getId()),
                         usersLikesFilmsStorage.getLikesCount(film2.getId())))
                 .limit(count)
@@ -126,4 +127,5 @@ public class FilmService {
         return usersLikesFilmsStorage.getCommonFilms(userId, friendId);
 
     }
+
 }

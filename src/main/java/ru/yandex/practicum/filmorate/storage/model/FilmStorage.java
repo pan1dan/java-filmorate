@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.model.film.Film;
 import java.util.List;
 
 public interface FilmStorage {
-    List<Film> getAllFilm();
+    List<Film> getAllFilms();
 
     List<Film> getSearchFilms(String query, SearchType searchType);
 
@@ -17,4 +17,6 @@ public interface FilmStorage {
     Film update(Film newFilm);
 
     Film getFilmById(Long filmId);
+
+    List<Film> getTopFilmsByLikes(Integer count, Integer genreId, Integer year);
 }
