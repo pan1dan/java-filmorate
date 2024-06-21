@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.film.SortType;
 import ru.yandex.practicum.filmorate.storage.model.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.model.FilmDirectorStorage;
 import ru.yandex.practicum.filmorate.storage.model.FilmStorage;
@@ -15,8 +17,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class FilmService {
-    private static final Logger log = LoggerFactory.getLogger(FilmService.class);
     private final FilmStorage filmStorage;
     private final UsersLikesFilmsStorage usersLikesFilmsStorage;
     private final FilmDirectorStorage filmDirectorStorage;
@@ -80,22 +82,25 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public List<Film> getTopDirectorFilmsByLikesOrYear(Long directorId, String sortField) {
+    public List<Film> getTopDirectorFilms(Long directorId, String sortField) {
         log.info("Начало работы метода по возвращение топа фильмов режиссера");
         directorStorage.getDirectorById(directorId);
         List<Film> directorFilms = filmDirectorStorage.getDirectorFilms(directorId);
-        if (sortField.equals("year")) {
-            directorFilms = directorFilms
-                    .stream()
-                    .sorted((film1, film2) -> film1.getReleaseDate().compareTo(film2.getReleaseDate()))
-                    .toList();
+        SortType sortType = SortType.fromString(sortField);
+        switch (sortType) {
+            case YEAR:
+                directorFilms = directorFilms.stream()
+                        .sorted((film1, film2) -> film1.getReleaseDate().compareTo(film2.getReleaseDate()))
+                        .toList();
+                break;
+            case LIKES:
+                directorFilms = directorFilms.stream()
+                        .sorted((film2, film1) -> Integer.compare(usersLikesFilmsStorage.getLikesCount(film1.getId()),
+                                usersLikesFilmsStorage.getLikesCount(film2.getId())))
+                        .toList();
+                break;
         }
-        if (sortField.equals("likes")) {
-            directorFilms = directorFilms.stream()
-                    .sorted((film2, film1) -> Integer.compare(usersLikesFilmsStorage.getLikesCount(film1.getId()),
-                            usersLikesFilmsStorage.getLikesCount(film2.getId())))
-                    .toList();
-        }
+
         return directorFilms;
     }
 }

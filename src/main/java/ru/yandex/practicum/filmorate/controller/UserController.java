@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +13,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
+@Slf4j
 public class UserController {
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     UserService userService;
 
     @Autowired
@@ -33,28 +34,36 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public List<User> getAllUsers() {
         log.info("GET /users");
-        return userService.getAllUsers();
+        List<User> allUsers = userService.getAllUsers();
+        log.info("GET /users возвращает значение: {}", allUsers);
+        return allUsers;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User addNewUser(@RequestBody User user) {
         log.info("POST /users");
-        return userService.addNewUser(user);
+        User addedUser = userService.addNewUser(user);
+        log.info("POST /users возвращает значение: {}", addedUser);
+        return addedUser;
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public User updateUser(@RequestBody User newUser) {
         log.info("PUT /users");
-        return userService.updateUser(newUser);
+        User updateUser = userService.updateUser(newUser);
+        log.info("PUT /users возвращает значение: {}", updateUser);
+        return updateUser;
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public User getUserById(@PathVariable(name = "id") Long userId) {
         log.info("GET /users/{}", userId);
-        return userService.getUserById(userId);
+        User user = userService.getUserById(userId);
+        log.info("GET /users/{} возвращает значение: {}", userId, user);
+        return user;
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -77,7 +86,9 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public List<User> getListFriends(@PathVariable(name = "id") Long userId) {
         log.info("GET /users/{}/friends", userId);
-        return userService.getUserListFriends(userId);
+        List<User> listFriends = userService.getUserListFriends(userId);
+        log.info("GET /users/{}/friends возвращает значение: {}", userId, listFriends);
+        return listFriends;
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
@@ -85,7 +96,9 @@ public class UserController {
     public List<User> getCommonFriendsList(@PathVariable(name = "id") Long userId,
                                            @PathVariable(name = "otherId") Long otherId) {
         log.info("GET /users/{}/friends/common/{}", userId, otherId);
-        return userService.getCommonFriendListTwoUsers(userId, otherId);
+        List<User> commonFriendsList = userService.getCommonFriendListTwoUsers(userId, otherId);
+        log.info("GET /users/{}/friends/common/{} возвращает значение: {}", userId, otherId, commonFriendsList);
+        return commonFriendsList;
     }
 }
 

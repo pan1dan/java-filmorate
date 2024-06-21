@@ -1,11 +1,10 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -20,18 +19,18 @@ import java.util.List;
 @Repository
 @Qualifier("directorDbStorage")
 @Primary
+@Slf4j
 public class DirectorDbStorage implements DirectorStorage {
-    private final JdbcTemplate jdbcTemplate;
-    private static final Logger log = LoggerFactory.getLogger(DirectorDbStorage.class);
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public DirectorDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public DirectorDbStorage(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     @Override
     public List<Director> getAllDirectors() {
         try {
-            return jdbcTemplate.query("SELECT * FROM directors", this::mapRow);
+            return namedParameterJdbcTemplate.query("SELECT * FROM directors", this::mapRow);
         } catch (Exception e) {
             log.warn("Ошибка при получении всех режиссеров из БД");
             throw new NotFoundException("Ошибка при получении всех режиссеров из БД");
@@ -41,15 +40,16 @@ public class DirectorDbStorage implements DirectorStorage {
     @Override
     public Director getDirectorById(Long id) {
         try {
-            String sql1 = "SELECT COUNT(*) FROM directors WHERE director_id = ?";
-            int count = jdbcTemplate.queryForObject(sql1, Integer.class, id);
+            String checkDirectorByIdSqlQuery = "SELECT COUNT(*) FROM directors WHERE director_id = :id";
+            MapSqlParameterSource params1 = new MapSqlParameterSource().addValue("id", id);
+            int count = namedParameterJdbcTemplate.queryForObject(checkDirectorByIdSqlQuery, params1, Integer.class);
             if (count == 0) {
                 log.warn("Режиссёр с id = {} отсутствует в БД", id);
                 throw new NotFoundException("Режиссёр с id = " + id + " отсутствует в БД");
             }
 
-            String sql2 = "SELECT director_id, director_name FROM directors WHERE director_id = ?";
-            return jdbcTemplate.queryForObject(sql2, this::mapRow, id);
+            String getDirectorByIdSqlQuery = "SELECT director_id, director_name FROM directors WHERE director_id = :id";
+            return namedParameterJdbcTemplate.queryForObject(getDirectorByIdSqlQuery, params1, this::mapRow);
         } catch (NotFoundException e) {
             log.warn("Режиссёр с id = {} отсутствует в БД", id);
             throw new NotFoundException("Режиссёр с id = " + id + " отсутствует в БД");
@@ -61,12 +61,11 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Director addNewDirector(Director director) {
-        directorValidation(director);
         try {
-            SimpleJdbcInsert insert1 = new SimpleJdbcInsert(jdbcTemplate)
+            SimpleJdbcInsert insertNewDirectorSql = new SimpleJdbcInsert(namedParameterJdbcTemplate.getJdbcTemplate())
                     .withTableName("directors")
                     .usingGeneratedKeyColumns("director_id");
-            Long directorId = (long) insert1.executeAndReturnKey(
+            Long directorId = (long) insertNewDirectorSql.executeAndReturnKey(
                     new MapSqlParameterSource("director_name", director.getName()));
             director.setId(directorId);
         } catch (ValidationException e) {
@@ -83,8 +82,11 @@ public class DirectorDbStorage implements DirectorStorage {
     @Override
     public Director updateDirector(Director newDirector) {
         try {
-            String sql = "UPDATE directors SET director_name = ? WHERE director_id = ?";
-            int rowsUpdated = jdbcTemplate.update(sql, newDirector.getName(), newDirector.getId());
+            String updateDirectorSql = "UPDATE directors SET director_name = :name WHERE director_id = :id";
+            MapSqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("name", newDirector.getName())
+                    .addValue("id", newDirector.getId());
+            int rowsUpdated = namedParameterJdbcTemplate.update(updateDirectorSql, params);
 
             if (rowsUpdated == 0) {
                 log.warn("Режиссер с id " + newDirector.getId() + " не найден");
@@ -104,8 +106,9 @@ public class DirectorDbStorage implements DirectorStorage {
     @Override
     public void deleteDirector(Long directorId) {
         try {
-            jdbcTemplate.update("DELETE FROM directors WHERE director_id = ?", directorId);
-            jdbcTemplate.update("DELETE FROM film_director WHERE director_id = ?", directorId);
+            MapSqlParameterSource directorParameters = new MapSqlParameterSource().addValue("id", directorId);
+            namedParameterJdbcTemplate.update("DELETE FROM directors WHERE director_id = :id", directorParameters);
+            namedParameterJdbcTemplate.update("DELETE FROM film_director WHERE director_id = :id", directorParameters);
         } catch (Exception e) {
             log.warn("Ошибка при удалении режиссера из БД", e);
             throw new RuntimeException("Ошибка при удалении режиссера из БД", e);
@@ -119,9 +122,4 @@ public class DirectorDbStorage implements DirectorStorage {
                 .build();
     }
 
-    public void directorValidation(Director director) {
-        if (director.getName() == null || director.getName().isBlank()) {
-            throw new ValidationException("Неправильное имя режиссера");
-        }
-    }
 }
