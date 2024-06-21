@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping("/directors")
 @Slf4j
 public class DirectorController {
-    DirectorService directorService;
+    private final DirectorService directorService;
 
     @Autowired
     public DirectorController(DirectorService directorService) {
