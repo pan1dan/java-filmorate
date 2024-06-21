@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,9 +13,9 @@ import ru.yandex.practicum.filmorate.storage.model.UsersLikesFilmsStorage;
 @Repository
 @Qualifier("usersLikesFilmsDbStorage")
 @Primary
+@Slf4j
 public class UsersLikesFilmsDbStorage implements UsersLikesFilmsStorage {
     private final JdbcTemplate jdbcTemplate;
-    private static final Logger log = LoggerFactory.getLogger(UsersLikesFilmsDbStorage.class);
 
     public UsersLikesFilmsDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;

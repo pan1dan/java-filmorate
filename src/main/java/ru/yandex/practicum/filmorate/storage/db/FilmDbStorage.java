@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,9 +31,9 @@ import java.util.stream.Collectors;
 @Repository
 @Qualifier("filmDbStorage")
 @Primary
+@Slf4j
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    private static final Logger log = LoggerFactory.getLogger(FilmDbStorage.class);
     private static final LocalDate BIRTHDAY_OF_THE_MOVIE = LocalDate.of(1895, 12, 28);
     GenresStorage genresStorage;
     FilmRatingMpaStorage filmRatingMpaStorage;
@@ -62,11 +63,11 @@ public class FilmDbStorage implements FilmStorage {
     public Film addNewFilmToStorage(Film film) {
         filmValidation(film);
         try {
-            SimpleJdbcInsert insert1 = new SimpleJdbcInsert(jdbcTemplate)
+            SimpleJdbcInsert insertNewFilmSql = new SimpleJdbcInsert(jdbcTemplate)
                     .withSchemaName("public")
                     .withTableName("films")
                     .usingGeneratedKeyColumns("film_id");
-            long filmId = (long) insert1.executeAndReturnKey(
+            long filmId = (long) insertNewFilmSql.executeAndReturnKey(
                     new MapSqlParameterSource("name", film.getName())
                             .addValue("description", film.getDescription())
                             .addValue("release_date", film.getReleaseDate())
@@ -75,23 +76,23 @@ public class FilmDbStorage implements FilmStorage {
             film.setId(filmId);
 
             if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-                SimpleJdbcInsert insert2 = new SimpleJdbcInsert(jdbcTemplate)
+                SimpleJdbcInsert insertFilmGenreSql = new SimpleJdbcInsert(jdbcTemplate)
                         .withTableName("film_genre")
                         .usingColumns("film_id", "genre_id");
 
                 for (Genre genre : film.getGenres()) {
-                    insert2.execute(new MapSqlParameterSource("film_id", filmId)
+                    insertFilmGenreSql.execute(new MapSqlParameterSource("film_id", filmId)
                                                             .addValue("genre_id", genre.getId()));
                 }
             }
 
             if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-                SimpleJdbcInsert insert3 = new SimpleJdbcInsert(jdbcTemplate)
+                SimpleJdbcInsert insertFilmDirectorSql = new SimpleJdbcInsert(jdbcTemplate)
                         .withTableName("film_director")
                         .usingColumns("film_id", "director_id");
 
                 for (Director director : film.getDirectors()) {
-                    insert3.execute(new MapSqlParameterSource("film_id", filmId)
+                    insertFilmDirectorSql.execute(new MapSqlParameterSource("film_id", filmId)
                                                             .addValue("director_id", director.getId()));
                 }
             }
@@ -108,13 +109,13 @@ public class FilmDbStorage implements FilmStorage {
     public Film updateFilmInStorage(Film newFilm) {
         filmValidation(newFilm);
         try {
-            String sql = "UPDATE films SET name = ?, " +
+            String updateFilmSql = "UPDATE films SET name = ?, " +
                     "description = ?, " +
                     "release_date = ?, " +
                     "duration = ?, " +
                     "mpa_id = ? " +
                     "WHERE film_id = ?";
-            int rowsUpdated = jdbcTemplate.update(sql, newFilm.getName(),
+            int rowsUpdated = jdbcTemplate.update(updateFilmSql, newFilm.getName(),
                     newFilm.getDescription(),
                     newFilm.getReleaseDate(),
                     newFilm.getDuration(),
@@ -178,10 +179,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film getFilmByIdFromStorage(Long filmId) {
         try {
-            String sql = "SELECT * " +
+            String getFilmByIdSqlObj = "SELECT * " +
                     "FROM films " +
                     "WHERE film_id = ?";
-            return jdbcTemplate.queryForObject(sql, this::mapRow, filmId);
+            return jdbcTemplate.queryForObject(getFilmByIdSqlObj, this::mapRow, filmId);
         } catch (Exception e) {
             log.warn("Ошибка при получении фильма по id из БД", e);
             throw new NotFoundException("Ошибка при получении фильма по id из БД");
