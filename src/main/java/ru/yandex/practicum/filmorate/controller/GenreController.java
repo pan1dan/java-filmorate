@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +11,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/genres")
+@Slf4j
 public class GenreController {
-    private static final Logger log = LoggerFactory.getLogger(GenreController.class);
     GenresService genresService;
 
     @Autowired
@@ -25,14 +24,18 @@ public class GenreController {
     @ResponseStatus(HttpStatus.OK)
     public List<Genre> getAllFilmsGenres() {
         log.info("GET /genres");
-        return genresService.getAllGenres();
+        List<Genre> allFilmsGenres = genresService.getAllGenres();
+        log.info("GET /genres возвращает значение: {}", allFilmsGenres);
+        return allFilmsGenres;
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Genre getGenreNameById(@PathVariable(name = "id") int genreId) {
         log.info("GET /genres/{}", genreId);
-        return genresService.getGenreNameById(genreId);
+        Genre genre = genresService.getGenreNameById(genreId);
+        log.info("GET /genres/{} возвращает значение: {}", genreId, genre);
+        return genre;
     }
 
 

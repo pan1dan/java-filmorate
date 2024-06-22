@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +11,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/films")
+@Slf4j
 public class FilmController {
-    private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     FilmService filmService;
 
     @Autowired
@@ -25,28 +24,36 @@ public class FilmController {
     @ResponseStatus(HttpStatus.OK)
     public List<Film> getAllFilms() {
         log.info("GET /films");
-        return filmService.getAllFilms();
+        List<Film> allFilms = filmService.getAllFilms();
+        log.info("GET /films возвращает значение: {}", allFilms);
+        return allFilms;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film addNewFilm(@RequestBody Film film) {
         log.info("POST /films");
-        return filmService.addNewFilm(film);
+        Film addedFilm = filmService.addNewFilm(film);
+        log.info("POST /films возвращает значение: {}", addedFilm);
+        return addedFilm;
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public Film updateFilm(@RequestBody Film newFilm) {
         log.info("PUT /films");
-        return filmService.updateFilm(newFilm);
+        Film updateFilm = filmService.updateFilm(newFilm);
+        log.info("PUT /films возвращает значение: {}", updateFilm);
+        return updateFilm;
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Film getFilmById(@PathVariable(name = "id") Long filmId) {
         log.info("GET /films/{}", filmId);
-        return filmService.getFilmById(filmId);
+        Film film = filmService.getFilmById(filmId);
+        log.info("GET /films/{} возвращает значение: {}", filmId, film);
+        return film;
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -69,7 +76,20 @@ public class FilmController {
     @ResponseStatus(HttpStatus.OK)
     public List<Film> getTopFilms(@RequestParam(defaultValue = "10") Integer count) {
         log.info("GET /films/popular?count={}", count);
-        return filmService.getTopFilmsByLikes(count);
+        List<Film> topFilms = filmService.getTopFilmsByLikes(count);
+        log.info("GET /films/popular?count={} возвращает значение: {}", count, topFilms);
+        return topFilms;
+    }
+
+    @GetMapping("/director/{directorId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getTopDirectorFilms(@PathVariable(name = "directorId") Long directorId,
+                                          @RequestParam(name = "sortBy") String sortType) {
+        log.info("GET /director/{}?sortBy={}", directorId, sortType);
+        List<Film> topDirectorsFilms = filmService.getTopDirectorFilms(directorId, sortType);
+        log.info("GET /director/{}?sortBy={} возвращает значение: {}", directorId, sortType, topDirectorsFilms);
+        return topDirectorsFilms;
+
     }
 
 }

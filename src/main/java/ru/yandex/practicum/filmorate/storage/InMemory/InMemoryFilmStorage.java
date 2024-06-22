@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.InMemory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,8 +17,8 @@ import java.util.Map;
 
 @Component
 @Qualifier("inMemoryFilmStorage")
+@Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
-    private static final Logger log = LoggerFactory.getLogger(InMemoryFilmStorage.class);
     private static final LocalDate BIRTHDAY_OF_THE_MOVIE = LocalDate.of(1895, 12, 28);
     Map<Long, Film> films = new HashMap<>();
 

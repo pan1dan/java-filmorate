@@ -7,9 +7,20 @@ Table film {
   mpa_id integer [ref : > film_rating_mpa.mpa_id] // one to one
 }
 Ref: film.film_id < film_genre.film_id // one to many
+Ref : film.film_id <> film_director.film_id // many to many
+
+Table film_director {
+  film_id bigint
+  director_id bigint [ref : - directors.director_id]
+}
+
+Table directors {
+  director_id bigint [primary key]
+  director_name varchar(100)
+}
 
 Table film_genre {
-  film_id bigint 
+  film_id bigint
   genre_id integer [ref: - genres.genre_id] // one to one
 }
 
@@ -47,7 +58,7 @@ Ref: user_friend.friend_id - user.user_id // one to one
 
 Table user_like_film {
   film_id bigint
-  user_id bigint 
+  user_id bigint
 }
 Ref: user_like_film.film_id > film.film_id
 Ref: user_like_film.user_id > user.user_id

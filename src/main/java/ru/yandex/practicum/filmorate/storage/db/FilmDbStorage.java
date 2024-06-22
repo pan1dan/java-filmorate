@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,9 +10,11 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.UserLikesFilms;
+import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Mpa;
+import ru.yandex.practicum.filmorate.storage.model.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.model.FilmRatingMpaStorage;
 import ru.yandex.practicum.filmorate.storage.model.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.model.GenresStorage;
@@ -22,26 +22,28 @@ import ru.yandex.practicum.filmorate.storage.model.GenresStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
 @Qualifier("filmDbStorage")
 @Primary
+@Slf4j
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    private static final Logger log = LoggerFactory.getLogger(FilmDbStorage.class);
     private static final LocalDate BIRTHDAY_OF_THE_MOVIE = LocalDate.of(1895, 12, 28);
     GenresStorage genresStorage;
     FilmRatingMpaStorage filmRatingMpaStorage;
+    DirectorStorage directorStorage;
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate,
-                         @Qualifier("genresDbStorage")GenresStorage genresStorage,
-                         @Qualifier("filmDbRatingMpaStorage") FilmRatingMpaStorage filmRatingMpaStorage) {
+                         @Qualifier("genresDbStorage") GenresStorage genresStorage,
+                         @Qualifier("filmDbRatingMpaStorage") FilmRatingMpaStorage filmRatingMpaStorage,
+                         @Qualifier("directorDbStorage") DirectorStorage directorStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.genresStorage = genresStorage;
         this.filmRatingMpaStorage = filmRatingMpaStorage;
+        this.directorStorage = directorStorage;
     }
 
     @Override
@@ -58,11 +60,11 @@ public class FilmDbStorage implements FilmStorage {
     public Film addNewFilmToStorage(Film film) {
         filmValidation(film);
         try {
-            SimpleJdbcInsert insert1 = new SimpleJdbcInsert(jdbcTemplate)
+            SimpleJdbcInsert insertNewFilmSql = new SimpleJdbcInsert(jdbcTemplate)
                     .withSchemaName("public")
                     .withTableName("films")
                     .usingGeneratedKeyColumns("film_id");
-            long filmId = (long) insert1.executeAndReturnKey(
+            long filmId = (long) insertNewFilmSql.executeAndReturnKey(
                     new MapSqlParameterSource("name", film.getName())
                             .addValue("description", film.getDescription())
                             .addValue("release_date", film.getReleaseDate())
@@ -71,13 +73,24 @@ public class FilmDbStorage implements FilmStorage {
             film.setId(filmId);
 
             if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-                SimpleJdbcInsert insert2 = new SimpleJdbcInsert(jdbcTemplate)
+                SimpleJdbcInsert insertFilmGenreSql = new SimpleJdbcInsert(jdbcTemplate)
                         .withTableName("film_genre")
                         .usingColumns("film_id", "genre_id");
 
                 for (Genre genre : film.getGenres()) {
-                    insert2.execute(new MapSqlParameterSource("film_id", filmId)
+                    insertFilmGenreSql.execute(new MapSqlParameterSource("film_id", filmId)
                                                             .addValue("genre_id", genre.getId()));
+                }
+            }
+
+            if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+                SimpleJdbcInsert insertFilmDirectorSql = new SimpleJdbcInsert(jdbcTemplate)
+                        .withTableName("film_director")
+                        .usingColumns("film_id", "director_id");
+
+                for (Director director : film.getDirectors()) {
+                    insertFilmDirectorSql.execute(new MapSqlParameterSource("film_id", filmId)
+                                                            .addValue("director_id", director.getId()));
                 }
             }
 
@@ -93,13 +106,13 @@ public class FilmDbStorage implements FilmStorage {
     public Film updateFilmInStorage(Film newFilm) {
         filmValidation(newFilm);
         try {
-            String sql = "UPDATE films SET name = ?, " +
+            String updateFilmSql = "UPDATE films SET name = ?, " +
                     "description = ?, " +
                     "release_date = ?, " +
                     "duration = ?, " +
                     "mpa_id = ? " +
                     "WHERE film_id = ?";
-            int rowsUpdated = jdbcTemplate.update(sql, newFilm.getName(),
+            int rowsUpdated = jdbcTemplate.update(updateFilmSql, newFilm.getName(),
                     newFilm.getDescription(),
                     newFilm.getReleaseDate(),
                     newFilm.getDuration(),
@@ -118,6 +131,13 @@ public class FilmDbStorage implements FilmStorage {
                             newFilm.getId(),
                             genre.getId());
                 }
+                List<Genre> sortedGenres = newFilm.getGenres()
+                        .stream()
+                        .sorted(Comparator.comparingInt(Genre::getId))
+                        .toList();
+                newFilm.setGenres(new LinkedHashSet<>(sortedGenres));
+            } else {
+                newFilm.setGenres(new HashSet<>());
             }
 
             jdbcTemplate.update("DELETE FROM users_likes_films WHERE film_id = ? ", newFilm.getId());
@@ -130,6 +150,22 @@ public class FilmDbStorage implements FilmStorage {
                 }
             }
 
+            jdbcTemplate.update("DELETE FROM film_director WHERE film_id = ?", newFilm.getId());
+            if (newFilm.getDirectors() != null && !newFilm.getDirectors().isEmpty()) {
+                for (Director director : newFilm.getDirectors()) {
+                    if (director.getName() == null || director.getName().isBlank()) {
+                        director.setName(directorStorage.getDirectorById(director.getId()).getName());
+                    }
+                    jdbcTemplate.update("INSERT INTO film_director(film_id, director_id)" +
+                            "VALUES(?, ?)",
+                            newFilm.getId(),
+                            director.getId());
+                }
+            }
+
+        } catch (NotFoundException e) {
+            log.warn("Фильм с id " + newFilm.getId() + " не найден");
+            throw new NotFoundException("Фильм с id " + newFilm.getId() + " не найден");
         } catch (Exception e) {
             log.warn("Ошибка при обновлении фильма в БД", e);
             throw new RuntimeException("Ошибка при обновлении фильма в БД", e);
@@ -140,10 +176,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film getFilmByIdFromStorage(Long filmId) {
         try {
-            String sql = "SELECT * " +
+            String getFilmByIdSqlObj = "SELECT * " +
                     "FROM films " +
                     "WHERE film_id = ?";
-            return jdbcTemplate.queryForObject(sql, this::mapRow, filmId);
+            return jdbcTemplate.queryForObject(getFilmByIdSqlObj, this::mapRow, filmId);
         } catch (Exception e) {
             log.warn("Ошибка при получении фильма по id из БД", e);
             throw new NotFoundException("Ошибка при получении фильма по id из БД");
@@ -201,6 +237,24 @@ public class FilmDbStorage implements FilmStorage {
                 .collect(Collectors.toSet());
         film.setUserLikesFilms(userLikesFilms);
 
+        String sql3 = "SELECT director_id " +
+                      "FROM film_director " +
+                      "WHERE film_id = " + rs.getLong("film_id");
+        List<Long> directorsIds = jdbcTemplate.query(sql3,
+                (resultSet, rowNumber) -> {
+                    return resultSet.getLong("director_id");
+                });
+        Set<Director> filmDirectors = directorsIds.stream()
+                .map(id -> {
+                    try {
+                        return directorStorage.getDirectorById(id);
+                    } catch (Exception e) {
+                        log.warn("Ошибка при получении жанров по их id", e);
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toSet());
+        film.setDirectors(filmDirectors);
+
         return film;
     }
 
@@ -239,13 +293,6 @@ public class FilmDbStorage implements FilmStorage {
         } catch (NotFoundException e) {
             throw new ValidationException("Добавление фильма с несуществующим рейтингом mpa");
         }
-
-//        for(Genre genre : film.getGenres()) {
-//            try {
-//                genresStorage.getGenreNameById(genre.getId());
-//            } catch (NotFoundException e) {
-//                throw new ValidationException("Добавление фильма с несуществующим жанром");
-//            }
-//        }
     }
+
 }
