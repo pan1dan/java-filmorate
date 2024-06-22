@@ -46,6 +46,15 @@ public class FilmDbStorage implements FilmStorage {
         this.directorStorage = directorStorage;
     }
     @Override
+    public List<Film> getAllFilm() {
+        try {
+            return jdbcTemplate.query("SELECT * FROM films", this::mapRow);
+        } catch (Exception e) {
+            log.warn("Ошибка при получении всех фильмов из БД");
+            throw new NotFoundException("Ошибка при получении всех фильмов из БД");
+        }
+    }
+    @Override
     public void deleteFilmByIdFromStorage(Long filmId) {
         try {
             String sql = "DELETE FROM films WHERE film_id = ?";
@@ -59,16 +68,6 @@ public class FilmDbStorage implements FilmStorage {
             throw new RuntimeException("Ошибка при удалении фильма с id " + filmId, e);
         }
     }
-    @Override
-    public List<Film> getAllFilm() {
-        try {
-            return jdbcTemplate.query("SELECT * FROM films", this::mapRow);
-        } catch (Exception e) {
-            log.warn("Ошибка при получении всех фильмов из БД");
-            throw new NotFoundException("Ошибка при получении всех фильмов из БД");
-        }
-    }
-
     @Override
     public Film create(Film film) {
         filmValidation(film);
