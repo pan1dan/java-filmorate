@@ -38,7 +38,7 @@ public class FilmDirectorDbStorage implements FilmDirectorStorage {
     }
 
     private Film mapRow(ResultSet rs, int rowNum) throws SQLException {
-        return filmStorage.getFilmByIdFromStorage(rs.getLong("film_id"));
+        return filmStorage.getFilmById(rs.getLong("film_id"));
     }
 
 }
