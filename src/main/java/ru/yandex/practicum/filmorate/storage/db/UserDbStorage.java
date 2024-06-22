@@ -41,7 +41,7 @@ public class UserDbStorage implements UserStorage {
 
 
     @Override
-    public List<User> getAllUsersFromStorage() {
+    public List<User> getAll() {
         try {
             String sql = "SELECT * " +
                     "FROM users";
@@ -53,7 +53,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User addNewUserInStorage(User user) {
+    public User create(User user) {
         userValidation(user);
         try {
             SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate)
@@ -97,7 +97,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User updateUserInStorage(User newUser) {
+    public User update(User newUser) {
         userValidation(newUser);
         try {
             String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
@@ -120,7 +120,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User getUserByIdFromStorage(Long userId) {
+    public User getUserById(Long userId) {
         try {
             String sql = "SELECT * " +
                     "FROM users " +

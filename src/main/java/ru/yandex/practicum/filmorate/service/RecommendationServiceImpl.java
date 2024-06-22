@@ -28,7 +28,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
     private void checkUser(final long userId) {
         log.info("Вызов метода recommendationServiceImpl.checkUser() c userId = {}", userId);
-        final User user = userDbStorage.getUserByIdFromStorage(userId);
+        final User user = userDbStorage.getUserById(userId);
         Optional.ofNullable(user)
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id = %s не найден ", userId)));
     }

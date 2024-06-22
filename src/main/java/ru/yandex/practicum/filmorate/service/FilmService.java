@@ -27,22 +27,22 @@ public class FilmService {
 
     public List<Film> getAllFilms() {
         log.info("Начало работы метода по получению всех фильмов");
-        return filmStorage.getAllFilmsFromStorage();
+        return filmStorage.getAll();
     }
 
     public Film addNewFilm(Film film) {
         log.info("Начало работы метода по добавлению нового фильма: {}", film);
-        return filmStorage.addNewFilmToStorage(film);
+        return filmStorage.create(film);
     }
 
     public Film updateFilm(Film newFilm) {
         log.info("Начало работы метода по обновлению фильма: {}", newFilm);
-        return filmStorage.updateFilmInStorage(newFilm);
+        return filmStorage.update(newFilm);
     }
 
     public Film getFilmById(Long filmId) {
         log.info("Начало работы метода по получению фильма по id = {}", filmId);
-        return filmStorage.getFilmByIdFromStorage(filmId);
+        return filmStorage.getFilmById(filmId);
     }
 
     public void addUserIdInFilmLikesList(Long filmId, Long userId) {
@@ -59,7 +59,7 @@ public class FilmService {
 
     public List<Film> getTopFilmsByLikes(Integer count) {
         log.info("Начало работы метода по возвращение топа фильмов");
-        return filmStorage.getAllFilmsFromStorage()
+        return filmStorage.getAll()
                 .stream()
                 .sorted((film2, film1) -> Integer.compare(usersLikesFilmsStorage.getLikesCount(film1.getId()),
                                                             usersLikesFilmsStorage.getLikesCount(film2.getId())))
