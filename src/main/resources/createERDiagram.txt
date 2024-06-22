@@ -53,8 +53,19 @@ Table user_friend {
   friend_id bigint
 
 }
+
+Table user_events {
+  event_id BIGINT [primary key]
+  user_id BIGINT
+  event_type VARCHAR('LIKE', 'REVIEW', 'FRIEND')
+  operation VARCHAR('REMOVE', 'ADD', 'UPDATE')
+  entity_id BIGINT
+  timestamp DATE
+}
+
 Ref: user.user_id < user_friend.user_id // one to many
 Ref: user_friend.friend_id - user.user_id // one to one
+Ref: user.user_id < user_events.user_id // one to many
 
 Table user_like_film {
   film_id bigint
