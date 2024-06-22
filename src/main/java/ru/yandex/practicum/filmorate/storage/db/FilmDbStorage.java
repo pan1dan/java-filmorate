@@ -45,9 +45,8 @@ public class FilmDbStorage implements FilmStorage {
         this.filmRatingMpaStorage = filmRatingMpaStorage;
         this.directorStorage = directorStorage;
     }
-
     @Override
-    public void deleteFilmByIdFromStorage(Long filmId) { //
+    public void deleteFilmByIdFromStorage(Long filmId) {
         try {
             String sql = "DELETE FROM films WHERE film_id = ?";
             int rowsDeleted = jdbcTemplate.update(sql, filmId);
@@ -60,7 +59,6 @@ public class FilmDbStorage implements FilmStorage {
             throw new RuntimeException("Ошибка при удалении фильма с id " + filmId, e);
         }
     }
-
     @Override
     public List<Film> getAllFilm() {
         try {
