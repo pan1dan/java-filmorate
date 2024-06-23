@@ -29,3 +29,6 @@ WHEN NOT MATCHED THEN
     INSERT (mpa_id, mpa_name)
     VALUES (source.mpa_id, source.mpa_name);
 
+MERGE INTO usabilitys VALUES (1, 'USEFUL', 1);
+MERGE INTO usabilitys VALUES (2, 'USELESS', -1);
+
