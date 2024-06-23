@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.model.user;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import jakarta.validation.constraints.*;
-
-import java.time.LocalDateTime;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 
 /**
  * CREATED: SHCHETININAS 23.06.2024
@@ -22,12 +22,12 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(of = "eventId")
 public class UserEvent {
 
-    LocalDateTime timestamp;
+    long timestamp;
     @NotNull
     long userId;
 
-    String eventType;
-    String operation;
+    EventType eventType;
+    Operation operation;
 
     @NotNull
     long eventId;

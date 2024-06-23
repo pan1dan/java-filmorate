@@ -6,8 +6,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.user.User;
-import ru.yandex.practicum.filmorate.storage.db.UserDbStorage;
+import ru.yandex.practicum.filmorate.service.interfaces.RecommendationService;
 import ru.yandex.practicum.filmorate.storage.model.RecommendationStorage;
+import ru.yandex.practicum.filmorate.storage.model.UserStorage;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,14 +17,14 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class RecommendationServiceImpl implements RecommendationService {
-    private final UserDbStorage userDbStorage;
-    private final RecommendationStorage recommendationStorage;
+    private final UserStorage userDbStorage;
+    private final RecommendationStorage recommendationDbStorage;
 
     @Override
     public List<Film> getRecommendations(final long userId) {
         log.info("Вызов метода recommendationServiceImpl.getRecommendations() c userId = {}", userId);
         checkUser(userId);
-        return recommendationStorage.getRecommendations(userId);
+        return recommendationDbStorage.getRecommendations(userId);
     }
 
     private void checkUser(final long userId) {

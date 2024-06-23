@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.Director;
-import ru.yandex.practicum.filmorate.service.serviceModel.DirectorService;
+import ru.yandex.practicum.filmorate.service.interfaces.DirectorService;
 import ru.yandex.practicum.filmorate.storage.model.DirectorStorage;
 
 import java.util.List;
