@@ -1,4 +1,4 @@
-Table film {
+Table films {
   film_id bigint [primary key]
   name varchar(100)
   description varchar(1000)
@@ -6,8 +6,8 @@ Table film {
   duration integer
   mpa_id integer [ref : > film_rating_mpa.mpa_id] // one to one
 }
-Ref: film.film_id < film_genre.film_id // one to many
-Ref : film.film_id <> film_director.film_id // many to many
+Ref: films.film_id < film_genre.film_id // one to many
+Ref : films.film_id <> film_director.film_id // many to many
 
 Table film_director {
   film_id bigint
@@ -34,7 +34,7 @@ Table film_rating_mpa {
   mpa_name varchar
 }
 
-Table user {
+Table users {
   user_id bigint [primary key]
   email varchar(100)
   login varchar(100)
@@ -47,7 +47,7 @@ Enum friendship_status {
   CONFIRMED
 }
 
-Table user_friend {
+Table user_friends {
   user_id bigint [primary key]
   status friendship_status
   friend_id bigint
@@ -63,13 +63,42 @@ Table user_events {
   timestamp DATE
 }
 
-Ref: user.user_id < user_friend.user_id // one to many
-Ref: user_friend.friend_id - user.user_id // one to one
-Ref: user.user_id < user_events.user_id // one to many
+Ref: users.user_id < user_friends.user_id // one to many
+Ref: user_friends.friend_id - users.user_id // one to one
 
-Table user_like_film {
+Ref: users.user_id < user_events.user_id // one to many
+
+Table users_likes_films {
   film_id bigint
   user_id bigint
 }
-Ref: user_like_film.film_id > film.film_id
-Ref: user_like_film.user_id > user.user_id
+Ref: users_likes_films.film_id > films.film_id
+Ref: users_likes_films.user_id > users.user_id
+
+Table usabilitys {
+  usability_id int [primary key]
+  usability varchar unique
+  weigh int
+}
+
+Table reviews {
+  review_id bigint [primary key]
+  film_id bigint
+  user_id bigint
+  content varchar(500)
+  is_positive bool
+}
+
+Table usability_reviews {
+  usability_review_id bigint [primary key]
+  user_id bigint
+  review_id bigint
+  usability_id int
+}
+
+Ref: users.user_id < reviews.user_id
+Ref: films.film_id < reviews.film_id
+Ref: users.user_id < usability_reviews.user_id
+Ref: reviews.review_id < usability_reviews.review_id
+Ref: usabilitys.usability_id - usability_reviews.usability_id
+

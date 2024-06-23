@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service.serviceModel;
+package ru.yandex.practicum.filmorate.service.interfaces;
 
 import ru.yandex.practicum.filmorate.model.film.Director;
 

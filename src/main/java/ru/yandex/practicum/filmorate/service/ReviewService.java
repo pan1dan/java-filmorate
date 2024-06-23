@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.model.*;
+import ru.yandex.practicum.filmorate.storage.model.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.model.LikeStateStorage;
+import ru.yandex.practicum.filmorate.storage.model.ReviewStorage;
+import ru.yandex.practicum.filmorate.storage.model.UserStorage;
 
 import java.util.List;
 
@@ -102,12 +105,12 @@ public class ReviewService {
 
     private void checkUser(long userId) {
         log.info("Начало работы метода checkUser userId {}", userId);
-        userStorage.getUserByIdFromStorage(userId);
+        userStorage.getUserById(userId);
     }
 
     private void checkFilm(long filmId) {
         log.info("Начало работы метода checkFilm filmId {}", filmId);
-        filmStorage.getFilmByIdFromStorage(filmId);
+        filmStorage.getFilmById(filmId);
     }
 
     private void checkReview(long reviewId) {

@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.model.user.UserEvent;
+import ru.yandex.practicum.filmorate.service.interfaces.UserService;
+import ru.yandex.practicum.filmorate.storage.model.UserEventStorage;
 import ru.yandex.practicum.filmorate.storage.model.UserFriendsStorage;
 import ru.yandex.practicum.filmorate.storage.model.UserStorage;
 
@@ -15,10 +17,11 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserServiceJdbc implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
     private final UserFriendsStorage userFriendsStorage;
+    private final UserEventStorage userEventDbStorage;
 
     @Override
     public List<User> getAllUsers() {
@@ -96,6 +99,6 @@ public class UserServiceJdbc implements UserService{
         // проверяем что такой пользователь есть в БД
         userStorage.getUserById(userId);
         // возвращаем все его события
-        return userStorage.getUserEvents(userId);
+        return userEventDbStorage.getUserEvents(userId);
     }
 }

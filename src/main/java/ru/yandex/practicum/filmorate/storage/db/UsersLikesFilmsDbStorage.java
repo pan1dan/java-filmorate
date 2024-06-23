@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.InsertDbException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.storage.model.UserEventStorage;
 import ru.yandex.practicum.filmorate.storage.model.UsersLikesFilmsStorage;
-
-import java.time.LocalDateTime;
 
 @Repository
 @Qualifier("usersLikesFilmsDbStorage")
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class UsersLikesFilmsDbStorage implements UsersLikesFilmsStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
+    private final UserEventStorage userEventDbStorage;
 
     @Override
     public int getLikesCount(long filmId) {
@@ -37,13 +37,7 @@ public class UsersLikesFilmsDbStorage implements UsersLikesFilmsStorage {
     public void addLikeFilm(long filmId, long userId) {
         try {
             // Записываем событие по добавлению лайка в БД
-            LocalDateTime timeOperation = LocalDateTime.now();
-            String sqlAddEvent = "INSERT INTO user_events(timestamp, user_id, event_type, operation, entity_id) " +
-                    "VALUES (?, ?, ?, ?, ?)";
-            int countUpd = jdbcTemplate.update(sqlAddEvent, timeOperation, userId, "LIKE", "ADD", filmId);
-            if(countUpd != 1){
-                throw new InsertDbException("Ошибка при записи в БД события по добавлению лайка");
-            }
+            userEventDbStorage.addUserEvent(userId, EventType.LIKE.name(), Operation.ADD.name(), filmId);
             // Выполняем добавление лайка.
             String sql = "INSERT INTO users_likes_films(film_id, user_id) VALUES (?, ?)";
             jdbcTemplate.update(sql, filmId, userId);
@@ -57,13 +51,7 @@ public class UsersLikesFilmsDbStorage implements UsersLikesFilmsStorage {
     public void deleteLikeFilm(long filmId, long userId) {
         try {
             // Записываем событие по удалению лайка в БД
-            LocalDateTime timeOperation = LocalDateTime.now();
-            String sqlAddEvent = "INSERT INTO user_events(timestamp, user_id, event_type, operation, entity_id) " +
-                    "VALUES (?, ?, ?, ?, ?)";
-            int countUpd = jdbcTemplate.update(sqlAddEvent, timeOperation, userId, "LIKE", "REMOVE", filmId);
-            if(countUpd != 1){
-                throw new InsertDbException("Ошибка при записи в БД события по удалению лайка");
-            }
+            userEventDbStorage.addUserEvent(userId, EventType.LIKE.name(), Operation.REMOVE.name(), filmId);
             // Выполняем удаление лайка.
             String sql = "DELETE FROM users_likes_films WHERE film_id = ? AND user_id = ?";
             int rowsUpdated = jdbcTemplate.update(sql, filmId, userId);
