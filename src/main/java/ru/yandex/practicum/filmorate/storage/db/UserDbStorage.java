@@ -37,6 +37,21 @@ public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     ZoneId zoneId = ZoneId.of("Europe/Moscow");
 
+    @Override
+    public void deleteUserById(long userId) {
+        try {
+            String deleteUserSql = "DELETE FROM users WHERE user_id = ?";
+            int rowsDeleted = jdbcTemplate.update(deleteUserSql, userId);
+            if (rowsDeleted == 0) {
+                log.warn("Пользователь с id " + userId + " не найден");
+                throw new NotFoundException("Пользователь с id " + userId + " не найден");
+            }
+        } catch (Exception e) {
+            log.error("Ошибка при удалении пользователя с id " + userId, e);
+            throw new RuntimeException("Ошибка при удалении пользователя с id " + userId, e);
+        }
+    }
+
 
     @Override
     public List<User> getAllUsers() {

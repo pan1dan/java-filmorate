@@ -20,6 +20,13 @@ public class FilmController {
         this.filmService = filmService;
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFilmById(@PathVariable(name = "id") long filmId) {
+        log.info("DELETE /films/{}", filmId);
+        filmService.deleteFilmById(filmId);
+    }
+
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<Film> getAllFilms() {
@@ -59,7 +66,7 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public void userLikeFilm(@PathVariable(name = "id") Long filmId,
-                                  @PathVariable(name = "userId") Long userId) {
+                             @PathVariable(name = "userId") Long userId) {
         log.info("PUT /films/{}/like/{}", filmId, userId);
         filmService.addUserIdInFilmLikesList(filmId, userId);
     }
@@ -67,7 +74,7 @@ public class FilmController {
     @DeleteMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public void userDeleteLikeOnFilm(@PathVariable(name = "id") Long filmId,
-                                          @PathVariable(name = "userId") Long userId) {
+                                     @PathVariable(name = "userId") Long userId) {
         log.info("DELETE /films/{}/like/{}", filmId, userId);
         filmService.deleteUserIdFromFilmLikesList(filmId, userId);
     }

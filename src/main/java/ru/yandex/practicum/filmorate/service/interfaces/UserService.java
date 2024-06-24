@@ -21,6 +21,8 @@ public interface UserService {
 
     List<User> getFriends(Long userId);
 
+    void deleteUserById(long userId);
+
     List<User> getCommonFriends(Long userId, Long otherId);
 
     List<UserEvent> getEvents(long userId);

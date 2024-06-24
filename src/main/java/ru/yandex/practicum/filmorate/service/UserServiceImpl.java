@@ -23,6 +23,11 @@ public class UserServiceImpl implements UserService {
     private final UserFriendsStorage userFriendsStorage;
     private final UserEventStorage userEventDbStorage;
 
+    public void deleteUserById(long userId) {
+        log.info("Начало работы метода по удалению пользователя с id = {}", userId);
+        userStorage.deleteUserById(userId);
+    }
+
     @Override
     public List<User> getAllUsers() {
         log.info("Начало работы метода по получению всех пользователей");

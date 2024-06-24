@@ -21,6 +21,14 @@ public class UserController {
         this.userServiceImpl = userServiceImpl;
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUserById(@PathVariable(name = "id") long userId) {
+        log.info("DELETE /users/{}", userId);
+        userServiceImpl.deleteUserById(userId);
+
+    }
+
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)

@@ -25,12 +25,17 @@ public class FilmService {
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("usersLikesFilmsDbStorage") UsersLikesFilmsStorage usersLikesFilmsStorage,
-                       @Qualifier("filmDirectorDbStorage")FilmDirectorStorage filmDirectorDbStorage,
-                       @Qualifier("directorDbStorage")DirectorStorage directorStorage) {
+                       @Qualifier("filmDirectorDbStorage") FilmDirectorStorage filmDirectorDbStorage,
+                       @Qualifier("directorDbStorage") DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.usersLikesFilmsStorage = usersLikesFilmsStorage;
         this.filmDirectorStorage = filmDirectorDbStorage;
         this.directorStorage = directorStorage;
+    }
+
+    public void deleteFilmById(long filmId) {
+        log.info("Начало работы метода по удалению фильма с id = {}", filmId);
+        filmStorage.deleteFilmById(filmId);
     }
 
     public List<Film> getAllFilms() {
@@ -70,7 +75,7 @@ public class FilmService {
         return filmStorage.getAllFilm()
                 .stream()
                 .sorted((film2, film1) -> Integer.compare(usersLikesFilmsStorage.getLikesCount(film1.getId()),
-                                                            usersLikesFilmsStorage.getLikesCount(film2.getId())))
+                        usersLikesFilmsStorage.getLikesCount(film2.getId())))
                 .limit(count)
                 .collect(Collectors.toList());
     }

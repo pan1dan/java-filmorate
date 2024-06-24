@@ -47,6 +47,21 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilmById(long filmId) {
+        try {
+            String deleteFilmSql = "DELETE FROM films WHERE film_id = ?";
+            int rowsDeleted = jdbcTemplate.update(deleteFilmSql, filmId);
+            if (rowsDeleted == 0) {
+                log.warn("Фильм с id " + filmId + " не найден");
+                throw new NotFoundException("Фильм с id " + filmId + " не найден");
+            }
+        } catch (Exception e) {
+            log.error("Ошибка при удалении фильма с id " + filmId, e);
+            throw new RuntimeException("Ошибка при удалении фильма с id " + filmId, e);
+        }
+    }
+
+    @Override
     public List<Film> getAllFilm() {
         try {
             return jdbcTemplate.query("SELECT * FROM films", this::mapRow);
@@ -79,7 +94,7 @@ public class FilmDbStorage implements FilmStorage {
 
                 for (Genre genre : film.getGenres()) {
                     insertFilmGenreSql.execute(new MapSqlParameterSource("film_id", filmId)
-                                                            .addValue("genre_id", genre.getId()));
+                            .addValue("genre_id", genre.getId()));
                 }
             }
 
@@ -90,7 +105,7 @@ public class FilmDbStorage implements FilmStorage {
 
                 for (Director director : film.getDirectors()) {
                     insertFilmDirectorSql.execute(new MapSqlParameterSource("film_id", filmId)
-                                                            .addValue("director_id", director.getId()));
+                            .addValue("director_id", director.getId()));
                 }
             }
 
@@ -145,10 +160,24 @@ public class FilmDbStorage implements FilmStorage {
                 for (UserLikesFilms userLikesFilms : newFilm.getUserLikesFilms()) {
                     jdbcTemplate.update("INSERT INTO users_likes_films(film_id, user_id)" +
                                     "VALUES(?, ?)",
-                                    userLikesFilms.getFilmId(),
-                                    userLikesFilms.getUserId());
+                            userLikesFilms.getFilmId(),
+                            userLikesFilms.getUserId());
                 }
             }
+
+            jdbcTemplate.update("DELETE FROM film_director WHERE film_id = ?", newFilm.getId());
+            if (newFilm.getDirectors() != null && !newFilm.getDirectors().isEmpty()) {
+                for (Director director : newFilm.getDirectors()) {
+                    if (director.getName() == null || director.getName().isBlank()) {
+                        director.setName(directorStorage.getDirectorById(director.getId()).getName());
+                    }
+                    jdbcTemplate.update("INSERT INTO film_director(film_id, director_id)" +
+                                    "VALUES(?, ?)",
+                            newFilm.getId(),
+                            director.getId());
+                }
+            }
+
 
             jdbcTemplate.update("DELETE FROM film_director WHERE film_id = ?", newFilm.getId());
             if (newFilm.getDirectors() != null && !newFilm.getDirectors().isEmpty()) {
@@ -208,14 +237,14 @@ public class FilmDbStorage implements FilmStorage {
                     return resultSet.getInt("genre_id");
                 });
         Set<Genre> filmGenres = genresIds.stream()
-                        .map(id -> {
-                            try {
-                                return genresStorage.getGenreNameById(id);
-                            } catch (Exception e) {
-                                log.warn("Ошибка при получении жанров по их id", e);
-                                throw new RuntimeException(e);
-                            }
-                        }).collect(Collectors.toSet());
+                .map(id -> {
+                    try {
+                        return genresStorage.getGenreNameById(id);
+                    } catch (Exception e) {
+                        log.warn("Ошибка при получении жанров по их id", e);
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toSet());
         film.setGenres(filmGenres);
 
         String sql2 = "SELECT user_id " +
@@ -238,8 +267,8 @@ public class FilmDbStorage implements FilmStorage {
         film.setUserLikesFilms(userLikesFilms);
 
         String sql3 = "SELECT director_id " +
-                      "FROM film_director " +
-                      "WHERE film_id = " + rs.getLong("film_id");
+                "FROM film_director " +
+                "WHERE film_id = " + rs.getLong("film_id");
         List<Long> directorsIds = jdbcTemplate.query(sql3,
                 (resultSet, rowNumber) -> {
                     return resultSet.getLong("director_id");
