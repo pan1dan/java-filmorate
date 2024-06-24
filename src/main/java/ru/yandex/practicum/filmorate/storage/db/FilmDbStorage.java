@@ -46,10 +46,10 @@ public class FilmDbStorage implements FilmStorage {
         this.directorStorage = directorStorage;
     }
     @Override
-    public void deleteFilmByIdFromStorage(Long filmId) {
+    public void deleteFilmById(long filmId) {
         try {
-            String sql = "DELETE FROM films WHERE film_id = ?";
-            int rowsDeleted = jdbcTemplate.update(sql, filmId);
+            String deleteFilmSql = "DELETE FROM films WHERE film_id = ?";
+            int rowsDeleted = jdbcTemplate.update(deleteFilmSql, filmId);
             if (rowsDeleted == 0) {
                 log.warn("Фильм с id " + filmId + " не найден");
                 throw new NotFoundException("Фильм с id " + filmId + " не найден");

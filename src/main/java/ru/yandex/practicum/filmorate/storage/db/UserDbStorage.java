@@ -38,10 +38,10 @@ public class UserDbStorage implements UserStorage {
     ZoneId zoneId = ZoneId.of("Europe/Moscow");
 
     @Override
-    public void deleteUserByIdFromStorage(long userId) {
+    public void deleteUserById(long userId) {
         try {
-            String sql = "DELETE FROM users WHERE user_id = ?";
-            int rowsDeleted = jdbcTemplate.update(sql, userId);
+            String deleteUserSql = "DELETE FROM users WHERE user_id = ?";
+            int rowsDeleted = jdbcTemplate.update(deleteUserSql, userId);
             if (rowsDeleted == 0) {
                 log.warn("Пользователь с id " + userId + " не найден");
                 throw new NotFoundException("Пользователь с id " + userId + " не найден");

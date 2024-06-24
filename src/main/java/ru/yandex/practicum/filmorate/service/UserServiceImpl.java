@@ -23,9 +23,9 @@ public class UserServiceImpl implements UserService {
     private final UserFriendsStorage userFriendsStorage;
     private final UserEventStorage userEventDbStorage;
 
-    public void deleteUserById(Long userId) {
+    public void deleteUserById(long userId) {
         log.info("Начало работы метода по удалению пользователя с id = {}", userId);
-        userStorage.deleteUserByIdFromStorage(userId);
+        userStorage.deleteUserById(userId);
     }
 
     @Override

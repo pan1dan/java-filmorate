@@ -35,7 +35,7 @@ public class FilmService {
 
     public void deleteFilmById(long filmId) {
         log.info("Начало работы метода по удалению фильма с id = {}", filmId);
-        filmStorage.deleteFilmByIdFromStorage(filmId);
+        filmStorage.deleteFilmById(filmId);
     }
 
     public List<Film> getAllFilms() {
