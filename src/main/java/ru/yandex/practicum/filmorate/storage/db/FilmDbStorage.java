@@ -177,6 +177,20 @@ public class FilmDbStorage implements FilmStorage {
                 }
             }
 
+
+            jdbcTemplate.update("DELETE FROM film_director WHERE film_id = ?", newFilm.getId());
+            if (newFilm.getDirectors() != null && !newFilm.getDirectors().isEmpty()) {
+                for (Director director : newFilm.getDirectors()) {
+                    if (director.getName() == null || director.getName().isBlank()) {
+                        director.setName(directorStorage.getDirectorById(director.getId()).getName());
+                    }
+                    jdbcTemplate.update("INSERT INTO film_director(film_id, director_id)" +
+                            "VALUES(?, ?)",
+                            newFilm.getId(),
+                            director.getId());
+                }
+            }
+
         } catch (NotFoundException e) {
             log.warn("Фильм с id " + newFilm.getId() + " не найден");
             throw new NotFoundException("Фильм с id " + newFilm.getId() + " не найден");

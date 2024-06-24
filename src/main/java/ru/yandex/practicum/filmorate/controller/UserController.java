@@ -26,6 +26,7 @@ public class UserController {
     public void deleteUserById(@PathVariable(name = "id") long userId) {
         log.info("DELETE /users/{}", userId);
         userServiceImpl.deleteUserById(userId);
+
     }
 
 
