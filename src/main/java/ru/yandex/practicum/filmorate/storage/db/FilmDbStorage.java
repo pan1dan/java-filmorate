@@ -45,6 +45,7 @@ public class FilmDbStorage implements FilmStorage {
         this.filmRatingMpaStorage = filmRatingMpaStorage;
         this.directorStorage = directorStorage;
     }
+
     @Override
     public void deleteFilmById(long filmId) {
         try {
@@ -93,7 +94,7 @@ public class FilmDbStorage implements FilmStorage {
 
                 for (Genre genre : film.getGenres()) {
                     insertFilmGenreSql.execute(new MapSqlParameterSource("film_id", filmId)
-                                                            .addValue("genre_id", genre.getId()));
+                            .addValue("genre_id", genre.getId()));
                 }
             }
 
@@ -104,7 +105,7 @@ public class FilmDbStorage implements FilmStorage {
 
                 for (Director director : film.getDirectors()) {
                     insertFilmDirectorSql.execute(new MapSqlParameterSource("film_id", filmId)
-                                                            .addValue("director_id", director.getId()));
+                            .addValue("director_id", director.getId()));
                 }
             }
 
@@ -171,7 +172,7 @@ public class FilmDbStorage implements FilmStorage {
                         director.setName(directorStorage.getDirectorById(director.getId()).getName());
                     }
                     jdbcTemplate.update("INSERT INTO film_director(film_id, director_id)" +
-                            "VALUES(?, ?)",
+                                    "VALUES(?, ?)",
                             newFilm.getId(),
                             director.getId());
                 }
@@ -252,8 +253,8 @@ public class FilmDbStorage implements FilmStorage {
         film.setUserLikesFilms(userLikesFilms);
 
         String sql3 = "SELECT director_id " +
-                      "FROM film_director " +
-                      "WHERE film_id = " + rs.getLong("film_id");
+                "FROM film_director " +
+                "WHERE film_id = " + rs.getLong("film_id");
         List<Long> directorsIds = jdbcTemplate.query(sql3,
                 (resultSet, rowNumber) -> {
                     return resultSet.getLong("director_id");
