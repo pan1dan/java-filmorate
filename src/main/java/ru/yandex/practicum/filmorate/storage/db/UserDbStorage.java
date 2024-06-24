@@ -38,7 +38,7 @@ public class UserDbStorage implements UserStorage {
     ZoneId zoneId = ZoneId.of("Europe/Moscow");
 
     @Override
-    public void deleteUserByIdFromStorage(Long userId) {
+    public void deleteUserByIdFromStorage(long userId) {
         try {
             String sql = "DELETE FROM users WHERE user_id = ?";
             int rowsDeleted = jdbcTemplate.update(sql, userId);

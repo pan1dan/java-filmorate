@@ -6,7 +6,8 @@ import java.util.List;
 
 public interface UserStorage {
     List<User> getAllUsers();
-    void deleteUserByIdFromStorage(Long userId);
+
+    void deleteUserByIdFromStorage(long userId);
 
     User create(User user);
     void deleteUserByIdFromStorage(Long userId);

@@ -33,7 +33,7 @@ public class FilmService {
         this.directorStorage = directorStorage;
     }
 
-    public void deleteFilmById(Long filmId) {
+    public void deleteFilmById(long filmId) {
         log.info("Начало работы метода по удалению фильма с id = {}", filmId);
         filmStorage.deleteFilmByIdFromStorage(filmId);
     }

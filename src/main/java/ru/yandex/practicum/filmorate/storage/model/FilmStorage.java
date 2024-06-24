@@ -5,7 +5,8 @@ import ru.yandex.practicum.filmorate.model.film.Film;
 import java.util.List;
 
 public interface FilmStorage {
-    void deleteFilmByIdFromStorage(Long filmId);
+    void deleteFilmByIdFromStorage(long filmId);
+
     List<Film> getAllFilm();
 
     void deleteFilmByIdFromStorage(Long filmId);

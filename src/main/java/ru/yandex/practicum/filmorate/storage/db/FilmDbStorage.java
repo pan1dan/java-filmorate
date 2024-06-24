@@ -69,20 +69,7 @@ public class FilmDbStorage implements FilmStorage {
             throw new NotFoundException("Ошибка при получении всех фильмов из БД");
         }
     }
-    @Override
-    public void deleteFilmByIdFromStorage(Long filmId) {
-        try {
-            String sql = "DELETE FROM films WHERE film_id = ?";
-            int rowsDeleted = jdbcTemplate.update(sql, filmId);
-            if (rowsDeleted == 0) {
-                log.warn("Фильм с id " + filmId + " не найден");
-                throw new NotFoundException("Фильм с id " + filmId + " не найден");
-            }
-        } catch (Exception e) {
-            log.error("Ошибка при удалении фильма с id " + filmId, e);
-            throw new RuntimeException("Ошибка при удалении фильма с id " + filmId, e);
-        }
-    }
+
     @Override
     public Film create(Film film) {
         filmValidation(film);
