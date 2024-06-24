@@ -80,13 +80,13 @@ public class FilmController {
     }
 
     //          "/director/{directorId}?sortBy=[year,likes]"
-//    @GetMapping("/director/{directorId}?sortBy=[year,likes]")
-//    @ResponseStatus(HttpStatus.OK)
-//    public List<Film> getTopDirectorFilms(@PathVariable(name = "directorId") Long directorId,
-//                                       @RequestParam(name = "sortBy") String sort) {
-//        log.info("GET /director/{}?sortBy={}", directorId, sort);
-//        return filmService
-//
-//    }
+    @GetMapping("/director/{directorId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getTopDirectorFilms(@PathVariable(name = "directorId") Long directorId,
+                                       @RequestParam(name = "sortBy") String sortType) {
+        log.info("GET /director/{}?sortBy={}", directorId, sortType);
+        return filmService.getTopDirectorFilmsByLikesOrYear(directorId, sortType);
+
+    }
 
 }

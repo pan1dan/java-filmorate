@@ -5,9 +5,14 @@ Table film {
   release_date date
   duration integer
   mpa_id integer [ref : > film_rating_mpa.mpa_id] // one to one
-  director_id bigint [ref : <> directors.director_id] // many to many
 }
 Ref: film.film_id < film_genre.film_id // one to many
+Ref : film.film_id <> film_director.film_id // many to many
+
+Table film_director {
+  film_id bigint
+  director_id bigint [ref : - directors.director_id]
+}
 
 Table directors {
   director_id bigint [primary key]

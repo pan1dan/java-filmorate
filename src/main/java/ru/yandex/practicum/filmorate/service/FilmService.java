@@ -6,9 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.storage.model.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.model.FilmDirectorStorage;
 import ru.yandex.practicum.filmorate.storage.model.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.model.UsersLikesFilmsStorage;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,12 +20,18 @@ public class FilmService {
     private static final Logger log = LoggerFactory.getLogger(FilmService.class);
     private final FilmStorage filmStorage;
     private final UsersLikesFilmsStorage usersLikesFilmsStorage;
+    private final FilmDirectorStorage filmDirectorStorage;
+    private final DirectorStorage directorStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("usersLikesFilmsDbStorage") UsersLikesFilmsStorage usersLikesFilmsStorage) {
+                       @Qualifier("usersLikesFilmsDbStorage") UsersLikesFilmsStorage usersLikesFilmsStorage,
+                       @Qualifier("filmDirectorDbStorage")FilmDirectorStorage filmDirectorDbStorage,
+                       @Qualifier("directorDbStorage")DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.usersLikesFilmsStorage = usersLikesFilmsStorage;
+        this.filmDirectorStorage = filmDirectorDbStorage;
+        this.directorStorage = directorStorage;
     }
 
     public void deleteFilmById(Long filmId) {
@@ -72,8 +81,22 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-//    public List<Film> getTopDirectorFilmsByLikesOrYear(Long directorId, String sortField) {
-//        log.info("Начало работы метода по возвращение топа фильмов режиссера");
-//
-//    }
+    public List<Film> getTopDirectorFilmsByLikesOrYear(Long directorId, String sortField) {
+        log.info("Начало работы метода по возвращение топа фильмов режиссера");
+        directorStorage.getDirectorById(directorId);
+        List<Film> directorFilms = filmDirectorStorage.getDirectorFilms(directorId);
+        if (sortField.equals("year")) {
+            directorFilms = directorFilms
+                    .stream()
+                    .sorted((film1, film2) -> film1.getReleaseDate().compareTo(film2.getReleaseDate()))
+                    .toList();
+        }
+        if (sortField.equals("likes")) {
+            directorFilms = directorFilms.stream()
+                    .sorted((film2, film1) -> Integer.compare(usersLikesFilmsStorage.getLikesCount(film1.getId()),
+                            usersLikesFilmsStorage.getLikesCount(film2.getId())))
+                    .toList();
+        }
+        return directorFilms;
+    }
 }
