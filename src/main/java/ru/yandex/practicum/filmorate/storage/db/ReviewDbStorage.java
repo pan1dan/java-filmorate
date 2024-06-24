@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,21 +9,25 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storage.model.ReviewStorage;
+import ru.yandex.practicum.filmorate.storage.model.UserEventStorage;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
 
 @Slf4j
 @Component
 @Primary
+@RequiredArgsConstructor
 public class ReviewDbStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbc;
-
-    public ReviewDbStorage(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+    private final UserEventStorage userEventDbStorage;
 
     private static final String REQUEST_ADD_REVIEW = """
             INSERT INTO reviews (film_id, user_id, content, is_positive)
@@ -126,6 +131,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public long createReview(Review review) {
+        // Выполняем добавление отзыва.
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
             PreparedStatement ps = connection
@@ -137,9 +143,12 @@ public class ReviewDbStorage implements ReviewStorage {
             return ps;
         }, keyHolder);
 
-        Long id = keyHolder.getKeyAs(Long.class);
-        if (id != null) {
-            return id;
+        Long reviewId = keyHolder.getKeyAs(Long.class);
+        if (reviewId != null) {
+            // Записываем событие по добавлению отзыва в БД
+            userEventDbStorage.addUserEvent(review.getUserId(),
+                    EventType.REVIEW.name(), Operation.ADD.name(), reviewId);
+            return reviewId;
         } else {
             throw new ValidationException("Не удалось сохранить данные");
         }
@@ -147,6 +156,10 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void updateReview(Review review) {
+        // Записываем событие по обновлению отзыва в БД
+        userEventDbStorage.addUserEvent(review.getUserId(),
+                EventType.REVIEW.name(), Operation.UPDATE.name(), review.getReviewId());
+        // Выполняем обновление отзыва.
         jdbc.update(REQUEST_UPDATE_REVIEW,
                 review.getContent(),
                 review.getIsPositive(),
@@ -155,6 +168,12 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public boolean deleteReviewById(long id) {
+        // проверяем что отзыв есть в БД
+        Review review = getReviewById(id);
+        // Записываем событие по удалению отзыва в БД
+        userEventDbStorage.addUserEvent(review.getUserId(),
+                EventType.REVIEW.name(), Operation.REMOVE.name(), review.getReviewId());
+        // Выполняем удаление отзыва.
         int rowsDeleted = jdbc.update(REQUEST_DELETE_REVIEW, id);
         return rowsDeleted > 0;
     }

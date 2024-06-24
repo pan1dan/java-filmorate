@@ -5,8 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.film.Director;
-
-import ru.yandex.practicum.filmorate.service.serviceModel.DirectorService;
+import ru.yandex.practicum.filmorate.service.interfaces.DirectorService;
 
 import java.util.List;
 

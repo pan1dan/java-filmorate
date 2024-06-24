@@ -47,7 +47,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getAllFilmsFromStorage() {
+    public List<Film> getAllFilm() {
         try {
             return jdbcTemplate.query("SELECT * FROM films", this::mapRow);
         } catch (Exception e) {
@@ -57,7 +57,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film addNewFilmToStorage(Film film) {
+    public Film create(Film film) {
         filmValidation(film);
         try {
             SimpleJdbcInsert insertNewFilmSql = new SimpleJdbcInsert(jdbcTemplate)
@@ -103,7 +103,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film updateFilmInStorage(Film newFilm) {
+    public Film update(Film newFilm) {
         filmValidation(newFilm);
         try {
             String updateFilmSql = "UPDATE films SET name = ?, " +
@@ -174,7 +174,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film getFilmByIdFromStorage(Long filmId) {
+    public Film getFilmById(Long filmId) {
         try {
             String getFilmByIdSqlObj = "SELECT * " +
                     "FROM films " +

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
@@ -30,17 +31,15 @@ import java.util.stream.Collectors;
 @Qualifier("userDbStorage")
 @Primary
 @Slf4j
+@RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
+
     private final JdbcTemplate jdbcTemplate;
     ZoneId zoneId = ZoneId.of("Europe/Moscow");
 
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
 
     @Override
-    public List<User> getAllUsersFromStorage() {
+    public List<User> getAllUsers() {
         try {
             String sql = "SELECT * " +
                     "FROM users";
@@ -52,7 +51,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User addNewUserInStorage(User user) {
+    public User create(User user) {
         userValidation(user);
         try {
             SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate)
@@ -69,7 +68,7 @@ public class UserDbStorage implements UserStorage {
             if (user.getUserFriends() != null && !user.getUserFriends().getFriendsIds().isEmpty()) {
                 for (Long id : user.getUserFriends().getFriendsIds()) {
                     jdbcTemplate.update("INSERT INTO user_friends(user_id, status, friend_id) " +
-                            "VALUES (?, ?, ?)",
+                                    "VALUES (?, ?, ?)",
                             user.getId(),
                             id,
                             user.getUserFriends().getFriendsStatusList().get(id));
@@ -96,7 +95,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User updateUserInStorage(User newUser) {
+    public User update(User newUser) {
         userValidation(newUser);
         try {
             String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE user_id = ?";
@@ -119,7 +118,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User getUserByIdFromStorage(Long userId) {
+    public User getUserById(Long userId) {
         try {
             String sql = "SELECT * " +
                     "FROM users " +
@@ -150,7 +149,7 @@ public class UserDbStorage implements UserStorage {
         Set<UserLikesFilms> userLikesFilms = filmIds.stream()
                 .map(id -> {
                     try {
-                        return new UserLikesFilms(rs.getLong("user_id"), (long)id);
+                        return new UserLikesFilms(rs.getLong("user_id"), (long) id);
                     } catch (SQLException e) {
                         log.warn("Ошибка при создании объекта UserLikesFilms", e);
                         throw new RuntimeException(e);
@@ -166,7 +165,7 @@ public class UserDbStorage implements UserStorage {
         List<Long> friendsIds = jdbcTemplate.query(sql2,
                 (resultSet, rowNumber) -> {
                     friendsStatusList.put(resultSet.getLong("friend_id"),
-                                          FriendshipStatus.valueOf(resultSet.getString("status")));
+                            FriendshipStatus.valueOf(resultSet.getString("status")));
                     return resultSet.getLong("friend_id");
                 });
 
@@ -175,7 +174,7 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
-    private User userValidation(User user) {
+    private void userValidation(User user) {
         log.debug("Начало валидации пользователя");
         if (user == null) {
             log.warn("Получено пустое тело запроса");
@@ -210,6 +209,5 @@ public class UserDbStorage implements UserStorage {
             log.debug("Присвоение имени пользвателя значение поля логин");
             user.setName(user.getLogin());
         }
-        return user;
     }
 }
