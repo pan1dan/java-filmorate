@@ -73,7 +73,7 @@ public class ReviewDbStorage implements ReviewStorage {
             LEFT JOIN usabilitys AS u ON ur.usability_id = u.usability_id
             WHERE r.film_id = ?
             GROUP BY r.review_id
-            ORDER BY useful DESC, r.review_id DESC
+            ORDER BY useful DESC, r.review_id
             LIMIT ?;
             """;
 
