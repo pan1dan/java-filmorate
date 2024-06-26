@@ -4,15 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.UserLikesFilms;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.SortType;
-import ru.yandex.practicum.filmorate.storage.model.DirectorStorage;
-import ru.yandex.practicum.filmorate.storage.model.FilmDirectorStorage;
-import ru.yandex.practicum.filmorate.storage.model.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.model.UsersLikesFilmsStorage;
+import ru.yandex.practicum.filmorate.storage.model.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,16 +18,19 @@ public class FilmService {
     private final UsersLikesFilmsStorage usersLikesFilmsStorage;
     private final FilmDirectorStorage filmDirectorStorage;
     private final DirectorStorage directorStorage;
+    private final UserStorage userStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("usersLikesFilmsDbStorage") UsersLikesFilmsStorage usersLikesFilmsStorage,
                        @Qualifier("filmDirectorDbStorage") FilmDirectorStorage filmDirectorDbStorage,
-                       @Qualifier("directorDbStorage") DirectorStorage directorStorage) {
+                       @Qualifier("directorDbStorage") DirectorStorage directorStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.usersLikesFilmsStorage = usersLikesFilmsStorage;
         this.filmDirectorStorage = filmDirectorDbStorage;
         this.directorStorage = directorStorage;
+        this.userStorage = userStorage;
     }
 
     public void deleteFilmById(long filmId) {
@@ -105,21 +103,9 @@ public class FilmService {
     }
 
     public List<Film> getCommonFilms(long userId, long friendId) {
-        log.info("Начало работы метода по получению общего списка фильмов");
-        List<Long> userLikesFilmsIds = usersLikesFilmsStorage.getUserFilms(userId)
-                .stream()
-                .map(UserLikesFilms::getFilmId)
-                .toList();
-        List<Long> friendLikesFilmsIds = usersLikesFilmsStorage.getUserFilms(friendId)
-                .stream()
-                .map(UserLikesFilms::getFilmId)
-                .toList();
-        List<Film> commonFilms = new ArrayList<>();
-        for (Long id : userLikesFilmsIds) {
-            if (friendLikesFilmsIds.contains(id)) {
-                commonFilms.add(filmStorage.getFilmById(id));
-            }
-        }
-        return commonFilms;
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+        return usersLikesFilmsStorage.getCommonFilms(userId, friendId);
+
     }
 }

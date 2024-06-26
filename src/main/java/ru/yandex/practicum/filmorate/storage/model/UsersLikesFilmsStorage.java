@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.model;
 
-import ru.yandex.practicum.filmorate.model.UserLikesFilms;
+import ru.yandex.practicum.filmorate.model.film.Film;
 
 import java.util.List;
 
@@ -11,5 +11,5 @@ public interface UsersLikesFilmsStorage {
 
     void deleteLikeFilm(long filmId, long userId);
 
-    List<UserLikesFilms> getUserFilms(long userId);
+    public List<Film> getCommonFilms(long userId, long friendId);
 }

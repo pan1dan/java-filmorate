@@ -7,12 +7,11 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.UserLikesFilms;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
-import ru.yandex.practicum.filmorate.storage.mapper.UserLikesFilmsMapper;
-import ru.yandex.practicum.filmorate.storage.model.UserEventStorage;
-import ru.yandex.practicum.filmorate.storage.model.UsersLikesFilmsStorage;
+import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
+import ru.yandex.practicum.filmorate.storage.model.*;
 
 import java.util.List;
 
@@ -25,6 +24,9 @@ public class UsersLikesFilmsDbStorage implements UsersLikesFilmsStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final UserEventStorage userEventDbStorage;
+    private final GenresStorage genreDbStorage;
+    private final FilmRatingMpaStorage filmDbRatingMpaStorage;
+    private final DirectorStorage directorDbStorage;
 
     @Override
     public int getLikesCount(long filmId) {
@@ -73,14 +75,24 @@ public class UsersLikesFilmsDbStorage implements UsersLikesFilmsStorage {
     }
 
     @Override
-    public List<UserLikesFilms> getUserFilms(long userId) {
+    public List<Film> getCommonFilms(long userId, long friendId) {
         try {
-            String getUserLikesFilmsSql = "SELECT user_id, film_id FROM users_likes_films WHERE user_id = ?";
-            return jdbcTemplate.query(getUserLikesFilmsSql, new UserLikesFilmsMapper(), userId);
-        } catch (Exception e) {
-            log.warn("Ошибка при получении списка лайкнутых фильмов из БД", e);
-            throw new RuntimeException("Ошибка при получении списка лайкнутых фильмов из БД", e);
-        }
+            String getCommonFilmsSql = "SELECT f.* " +
+                                       "FROM films AS f " +
+                                       "INNER JOIN users_likes_films AS ulf1 ON f.film_id = ulf1.film_id " +
+                                       "INNER JOIN users_likes_films AS ulf2 ON f.film_id = ulf2.film_id " +
+                                       "WHERE ulf1.user_id = ? AND ulf2.user_id = ?";
 
+            return jdbcTemplate.query(getCommonFilmsSql,
+                                      new FilmRowMapper(jdbcTemplate,
+                                                        genreDbStorage,
+                                                        filmDbRatingMpaStorage,
+                                                        directorDbStorage),
+                                      userId,
+                                      friendId);
+        } catch (Exception e) {
+            log.warn("Ошибка при получении списка общих фильмов из БД", e);
+            throw new RuntimeException("Ошибка при получении списка общих фильмов из БД", e);
+        }
     }
 }
