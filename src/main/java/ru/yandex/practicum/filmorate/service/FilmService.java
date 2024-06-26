@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.enums.SearchType;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.SortType;
 import ru.yandex.practicum.filmorate.storage.model.DirectorStorage;
@@ -12,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.model.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.model.UsersLikesFilmsStorage;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -100,5 +102,22 @@ public class FilmService {
         }
 
         return directorFilms;
+    }
+
+    public List<Film> getSearchFilms(String query, List<String> by) {
+        SearchType searchType = getSearchType(by);
+        return filmStorage.getSearchFilms(query, searchType);
+    }
+
+    private SearchType getSearchType(List<String> by) {
+        if ((by.size() == 2)
+                && ((by.get(0).equals("director") && (by.get(1).equals("title")))
+                || (by.get(0).equals("title") && (by.get(1).equals("director"))))) {
+            return SearchType.TITLE_AND_DIRECTOR;
+        } else if (by.size() == 1 && by.get(0).equals("director")) {
+            return SearchType.DIRECTOR;
+        } else {
+        return SearchType.TITLE;
+        }
     }
 }

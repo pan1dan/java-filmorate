@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/films")
@@ -97,6 +98,15 @@ public class FilmController {
         log.info("GET /director/{}?sortBy={} возвращает значение: {}", directorId, sortType, topDirectorsFilms);
         return topDirectorsFilms;
 
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> searchFilms(
+            @RequestParam(defaultValue = "") String query,
+            @RequestParam(defaultValue = "title") List<String> by) {
+        log.info("GET /films/search?query: {} by: {}", query, by.toString());
+        return filmService.getSearchFilms(query, by);
     }
 
 }
