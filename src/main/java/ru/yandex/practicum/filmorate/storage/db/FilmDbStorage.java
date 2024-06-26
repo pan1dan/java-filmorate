@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.enums.SearchType;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.UserLikesFilms;
@@ -321,6 +322,74 @@ public class FilmDbStorage implements FilmStorage {
             filmRatingMpaStorage.getMpaById(film.getMpa().getId());
         } catch (NotFoundException e) {
             throw new ValidationException("Добавление фильма с несуществующим рейтингом mpa");
+        }
+    }
+
+    private static final String FILMS_SEARCH_BY_TITLE = """
+            SELECT
+                f.film_id AS film_id,
+                f.name AS name,
+                f.description AS description,
+                f.release_date AS release_date,
+                f.duration AS duration,
+                r.mpa_id AS mpa_id
+            FROM films AS f
+            LEFT JOIN users_likes_films AS l ON l.film_id = f.film_id
+            LEFT JOIN film_rating_mpa AS r ON  f.mpa_id = r.mpa_id
+            WHERE LOWER(f.name) LIKE LOWER('%' || ? || '%')
+            GROUP BY f.name, f.film_id
+            ORDER BY film_id;
+            """;
+
+    private static final String FILMS_SEARCH_BY_DIRECTOR = """
+            SELECT
+                f.film_id AS film_id,
+                f.name AS name,
+                f.description AS description,
+                f.release_date AS release_date,
+                f.duration AS duration,
+                r.mpa_id AS mpa_id
+            FROM films AS f
+            LEFT JOIN users_likes_films AS l ON l.film_id = f.film_id
+            LEFT JOIN film_rating_mpa AS r ON  f.mpa_id = r.mpa_id
+            LEFT JOIN film_director AS fd ON f.film_id = fd.film_id
+            LEFT JOIN directors AS d ON fd.director_id = d.director_id
+            WHERE LOWER(d.director_name) LIKE LOWER('%' || ? || '%')
+            GROUP BY f.name, f.film_id
+            ORDER BY film_id;
+            """;
+
+    private static final String FILMS_SEARCH_BY_TITLE_AND_DIRECTOR = """
+            SELECT
+                f.film_id AS film_id,
+                f.name AS name,
+                f.description AS description,
+                f.release_date AS release_date,
+                f.duration AS duration,
+                r.mpa_id AS mpa_id
+            FROM films AS f
+            LEFT JOIN users_likes_films AS l ON l.film_id = f.film_id
+            LEFT JOIN film_rating_mpa AS r ON  f.mpa_id = r.mpa_id
+            LEFT JOIN film_director AS fd ON f.film_id = fd.film_id
+            LEFT JOIN directors AS d ON fd.director_id = d.director_id
+            WHERE LOWER(d.director_name) LIKE LOWER('%' || ? || '%')
+                OR LOWER(f.name) LIKE LOWER('%' || ? || '%')
+            GROUP BY f.name, f.film_id
+            ORDER BY film_id;
+            """;
+
+    public List<Film> getSearchFilms(String query, SearchType searchType) {
+        log.info("Получение фильмов по запросу = {}", query);
+        switch (searchType) {
+            case TITLE_AND_DIRECTOR -> {
+                return jdbcTemplate.query(FILMS_SEARCH_BY_TITLE_AND_DIRECTOR, this::mapRow, query, query);
+            }
+            case DIRECTOR -> {
+                return jdbcTemplate.query(FILMS_SEARCH_BY_DIRECTOR, this::mapRow, query);
+            }
+            default -> {
+                return jdbcTemplate.query(FILMS_SEARCH_BY_TITLE, this::mapRow, query);
+            }
         }
     }
 
