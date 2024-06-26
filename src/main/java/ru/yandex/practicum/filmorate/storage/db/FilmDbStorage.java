@@ -315,13 +315,29 @@ public class FilmDbStorage implements FilmStorage {
         log.info("Получение фильмов по запросу = {}", query);
         switch (searchType) {
             case TITLE_AND_DIRECTOR -> {
-                return jdbcTemplate.query(FILMS_SEARCH_BY_TITLE_AND_DIRECTOR, this::mapRow, query, query);
+                return jdbcTemplate.query(FILMS_SEARCH_BY_TITLE_AND_DIRECTOR,
+                                          new FilmRowMapper(jdbcTemplate,
+                                                            genresStorage,
+                                                            filmRatingMpaStorage,
+                                                            directorStorage),
+                                          query,
+                                          query);
             }
             case DIRECTOR -> {
-                return jdbcTemplate.query(FILMS_SEARCH_BY_DIRECTOR, this::mapRow, query);
+                return jdbcTemplate.query(FILMS_SEARCH_BY_DIRECTOR,
+                                          new FilmRowMapper(jdbcTemplate,
+                                                            genresStorage,
+                                                            filmRatingMpaStorage,
+                                                            directorStorage),
+                                          query);
             }
             default -> {
-                return jdbcTemplate.query(FILMS_SEARCH_BY_TITLE, this::mapRow, query);
+                return jdbcTemplate.query(FILMS_SEARCH_BY_TITLE,
+                                          new FilmRowMapper(jdbcTemplate,
+                                                            genresStorage,
+                                                            filmRatingMpaStorage,
+                                                            directorStorage),
+                                          query);
             }
         }
     }
