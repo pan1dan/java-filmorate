@@ -14,17 +14,14 @@ import ru.yandex.practicum.filmorate.model.UserLikesFilms;
 import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
-import ru.yandex.practicum.filmorate.model.film.Mpa;
+import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.model.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.model.FilmRatingMpaStorage;
 import ru.yandex.practicum.filmorate.storage.model.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.model.GenresStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @Qualifier("filmDbStorage")
@@ -65,7 +62,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getAllFilm() {
         try {
-            return jdbcTemplate.query("SELECT * FROM films", this::mapRow);
+            return jdbcTemplate.query("SELECT * FROM films", new FilmRowMapper(jdbcTemplate,
+                                                                                   genresStorage,
+                                                                                   filmRatingMpaStorage,
+                                                                                   directorStorage));
         } catch (Exception e) {
             log.warn("Ошибка при получении всех фильмов из БД");
             throw new NotFoundException("Ошибка при получении всех фильмов из БД");
@@ -209,83 +209,16 @@ public class FilmDbStorage implements FilmStorage {
             String getFilmByIdSqlObj = "SELECT * " +
                     "FROM films " +
                     "WHERE film_id = ?";
-            return jdbcTemplate.queryForObject(getFilmByIdSqlObj, this::mapRow, filmId);
+            return jdbcTemplate.queryForObject(getFilmByIdSqlObj,
+                                               new FilmRowMapper(jdbcTemplate,
+                                                                 genresStorage,
+                                                                 filmRatingMpaStorage,
+                                                                 directorStorage),
+                                               filmId);
         } catch (Exception e) {
             log.warn("Ошибка при получении фильма по id из БД", e);
             throw new NotFoundException("Ошибка при получении фильма по id из БД");
         }
-    }
-
-    private Film mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Mpa mpa = new Mpa();
-        mpa.setId(rs.getInt("mpa_id"));
-        mpa.setName(filmRatingMpaStorage.getMpaById(rs.getInt("mpa_id")).getName());
-
-        Film film = Film.builder()
-                .id(rs.getLong("film_id"))
-                .name(rs.getString("name"))
-                .description(rs.getString("description"))
-                .releaseDate(rs.getDate("release_date").toLocalDate())
-                .duration(rs.getInt("duration"))
-                .mpa(mpa)
-                .build();
-
-        String sql1 = "SELECT genre_id " +
-                "FROM film_genre " +
-                "WHERE film_id = " + rs.getLong("film_id") + " ORDER BY genre_id";
-        List<Integer> genresIds = jdbcTemplate.query(sql1,
-                (resultSet, rowNumber) -> {
-                    return resultSet.getInt("genre_id");
-                });
-        Set<Genre> filmGenres = genresIds.stream()
-                .map(id -> {
-                    try {
-                        return genresStorage.getGenreNameById(id);
-                    } catch (Exception e) {
-                        log.warn("Ошибка при получении жанров по их id", e);
-                        throw new RuntimeException(e);
-                    }
-                }).collect(Collectors.toSet());
-        film.setGenres(filmGenres);
-
-        String sql2 = "SELECT user_id " +
-                "FROM users_likes_films " +
-                "WHERE film_id = " + rs.getLong("film_id");
-        List<Long> usersIds = jdbcTemplate.query(sql2,
-                (resultSet, rowNumber) -> {
-                    return resultSet.getLong("user_id");
-                });
-        Set<UserLikesFilms> userLikesFilms = usersIds.stream()
-                .map(userId -> {
-                    try {
-                        return new UserLikesFilms(rs.getLong("film_id"), userId);
-                    } catch (SQLException e) {
-                        log.warn("Ошибка при создании объекта UserLikesFilms", e);
-                        throw new RuntimeException(e);
-                    }
-                })
-                .collect(Collectors.toSet());
-        film.setUserLikesFilms(userLikesFilms);
-
-        String sql3 = "SELECT director_id " +
-                "FROM film_director " +
-                "WHERE film_id = " + rs.getLong("film_id");
-        List<Long> directorsIds = jdbcTemplate.query(sql3,
-                (resultSet, rowNumber) -> {
-                    return resultSet.getLong("director_id");
-                });
-        Set<Director> filmDirectors = directorsIds.stream()
-                .map(id -> {
-                    try {
-                        return directorStorage.getDirectorById(id);
-                    } catch (Exception e) {
-                        log.warn("Ошибка при получении жанров по их id", e);
-                        throw new RuntimeException(e);
-                    }
-                }).collect(Collectors.toSet());
-        film.setDirectors(filmDirectors);
-
-        return film;
     }
 
     private void filmValidation(Film film) {
@@ -382,13 +315,29 @@ public class FilmDbStorage implements FilmStorage {
         log.info("Получение фильмов по запросу = {}", query);
         switch (searchType) {
             case TITLE_AND_DIRECTOR -> {
-                return jdbcTemplate.query(FILMS_SEARCH_BY_TITLE_AND_DIRECTOR, this::mapRow, query, query);
+                return jdbcTemplate.query(FILMS_SEARCH_BY_TITLE_AND_DIRECTOR,
+                                          new FilmRowMapper(jdbcTemplate,
+                                                            genresStorage,
+                                                            filmRatingMpaStorage,
+                                                            directorStorage),
+                                          query,
+                                          query);
             }
             case DIRECTOR -> {
-                return jdbcTemplate.query(FILMS_SEARCH_BY_DIRECTOR, this::mapRow, query);
+                return jdbcTemplate.query(FILMS_SEARCH_BY_DIRECTOR,
+                                          new FilmRowMapper(jdbcTemplate,
+                                                            genresStorage,
+                                                            filmRatingMpaStorage,
+                                                            directorStorage),
+                                          query);
             }
             default -> {
-                return jdbcTemplate.query(FILMS_SEARCH_BY_TITLE, this::mapRow, query);
+                return jdbcTemplate.query(FILMS_SEARCH_BY_TITLE,
+                                          new FilmRowMapper(jdbcTemplate,
+                                                            genresStorage,
+                                                            filmRatingMpaStorage,
+                                                            directorStorage),
+                                          query);
             }
         }
     }
