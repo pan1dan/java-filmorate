@@ -14,14 +14,18 @@ import ru.yandex.practicum.filmorate.model.UserLikesFilms;
 import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
+import ru.yandex.practicum.filmorate.model.film.Mpa;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.model.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.model.FilmRatingMpaStorage;
 import ru.yandex.practicum.filmorate.storage.model.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.model.GenresStorage;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @Qualifier("filmDbStorage")
@@ -60,7 +64,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getAllFilm() {
+    public List<Film> getAllFilms() {
         try {
             return jdbcTemplate.query("SELECT * FROM films", new FilmRowMapper(jdbcTemplate,
                                                                                    genresStorage,
@@ -187,7 +191,7 @@ public class FilmDbStorage implements FilmStorage {
                         director.setName(directorStorage.getDirectorById(director.getId()).getName());
                     }
                     jdbcTemplate.update("INSERT INTO film_director(film_id, director_id)" +
-                            "VALUES(?, ?)",
+                                    "VALUES(?, ?)",
                             newFilm.getId(),
                             director.getId());
                 }
@@ -219,6 +223,60 @@ public class FilmDbStorage implements FilmStorage {
             log.warn("Ошибка при получении фильма по id из БД", e);
             throw new NotFoundException("Ошибка при получении фильма по id из БД");
         }
+    }
+
+    private Film mapRow(ResultSet rs, int rowNum) throws SQLException {
+        Mpa mpa = new Mpa();
+        mpa.setId(rs.getInt("mpa_id"));
+        mpa.setName(filmRatingMpaStorage.getMpaById(rs.getInt("mpa_id")).getName());
+
+        Film film = Film.builder()
+                .id(rs.getLong("film_id"))
+                .name(rs.getString("name"))
+                .description(rs.getString("description"))
+                .releaseDate(rs.getDate("release_date").toLocalDate())
+                .duration(rs.getInt("duration"))
+                .mpa(mpa)
+                .build();
+
+        String sql1 = "SELECT genre_id " +
+                "FROM film_genre " +
+                "WHERE film_id = " + rs.getLong("film_id") + " ORDER BY genre_id";
+        List<Integer> genresIds = jdbcTemplate.query(sql1,
+                (resultSet, rowNumber) -> {
+                    return resultSet.getInt("genre_id");
+                });
+        Set<Genre> filmGenres = genresIds.stream()
+                .map(id -> {
+                    try {
+                        return genresStorage.getGenreNameById(id);
+                    } catch (Exception e) {
+                        log.warn("Ошибка при получении жанров по их id", e);
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toSet());
+        film.setGenres(filmGenres);
+
+        String sql2 = "SELECT user_id " +
+                "FROM users_likes_films " +
+                "WHERE film_id = " + rs.getLong("film_id");
+        List<Long> usersIds = jdbcTemplate.query(sql2,
+                (resultSet, rowNumber) -> {
+                    return resultSet.getLong("user_id");
+                });
+        Set<UserLikesFilms> userLikesFilms = usersIds.stream()
+                .map(userId -> {
+                    try {
+                        return new UserLikesFilms(rs.getLong("film_id"), userId);
+                    } catch (SQLException e) {
+                        log.warn("Ошибка при создании объекта UserLikesFilms", e);
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toSet());
+        film.setUserLikesFilms(userLikesFilms);
+
+        return film;
     }
 
     private void filmValidation(Film film) {
@@ -339,6 +397,21 @@ public class FilmDbStorage implements FilmStorage {
                                                             directorStorage),
                                           query);
             }
+        }
+    }
+
+    @Override
+    public List<Film> getTopFilmsByLikes(Integer count, Integer genreId, Integer year) {
+        try {
+            String sql = "SELECT * FROM films WHERE " +
+                    "(? IS NULL OR EXISTS (SELECT 1 FROM film_genre WHERE film_id = films.film_id AND genre_id = ?)) " +
+                    "AND (? IS NULL OR EXTRACT(YEAR FROM release_date) = ?) " +
+                    "ORDER BY (SELECT COUNT(*) FROM users_likes_films WHERE film_id = films.film_id) DESC " +
+                    "LIMIT ?";
+            return jdbcTemplate.query(sql, this::mapRow, genreId, genreId, year, year, count);
+        } catch (Exception e) {
+            log.warn("Ошибка при получении топа фильмов из БД", e);
+            throw new NotFoundException("Ошибка при получении топа фильмов из БД");
         }
     }
 
