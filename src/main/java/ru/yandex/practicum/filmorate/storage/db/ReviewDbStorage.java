@@ -158,7 +158,7 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void updateReview(Review review) {
         // Записываем событие по обновлению отзыва в БД
-        userEventDbStorage.addUserEvent(review.getUserId(),
+        userEventDbStorage.addUserEvent(review.getReviewId(),
                 EventType.REVIEW.name(), Operation.UPDATE.name(), review.getReviewId());
         // Выполняем обновление отзыва.
         jdbc.update(REQUEST_UPDATE_REVIEW,

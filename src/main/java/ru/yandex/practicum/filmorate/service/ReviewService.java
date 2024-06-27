@@ -52,9 +52,9 @@ public class ReviewService {
         return reviewStorage.getReviewById(reviewId);
     }
 
-    public List<Review> getReviews(long filmId, int count) {
+    public List<Review> getReviews(Long filmId, int count) {
         log.info("Начало работы метода getReviews filmId {} count {}", filmId, count);
-        if (filmId >= 0) {
+        if (filmId != null) {
             checkFilm(filmId);
             return reviewStorage.getReviewsFilm(filmId, count);
         }

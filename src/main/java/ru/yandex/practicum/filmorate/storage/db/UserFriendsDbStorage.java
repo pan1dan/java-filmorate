@@ -29,12 +29,12 @@ public class UserFriendsDbStorage implements UserFriendsStorage {
     @Override
     public void addFriend(long user1Id, long user2Id) {
         try {
-            // Записываем событие по добавлению друга в БД
-            userEventDbStorage.addUserEvent(user1Id, EventType.FRIEND.name(), Operation.ADD.name(), user2Id);
             // Выполняем добавление друга.
             String sql = "INSERT INTO user_friends(user_id, status, friend_id) " +
                     "VALUES (?, ?, ?)";
             jdbcTemplate.update(sql, user1Id, FriendshipStatus.UNCONFIRMED.name(), user2Id);
+            // Записываем событие по добавлению друга в БД
+            userEventDbStorage.addUserEvent(user1Id, EventType.FRIEND.name(), Operation.ADD.name(), user2Id);
         } catch (Exception e) {
             log.warn("Ошибка при добавлении друга в БД", e);
             throw new RuntimeException("Ошибка при добавлении друга в БД", e);
@@ -44,11 +44,11 @@ public class UserFriendsDbStorage implements UserFriendsStorage {
     @Override
     public void deleteFriend(long user1Id, long user2Id) {
         try {
-            // Записываем событие по удалению друга в БД
-            userEventDbStorage.addUserEvent(user1Id, EventType.FRIEND.name(), Operation.REMOVE.name(), user2Id);
             // Выполняем удаление друга.
             String sql = "DELETE FROM user_friends WHERE user_id = ? AND friend_id = ?";
             jdbcTemplate.update(sql, user1Id, user2Id);
+            // Записываем событие по удалению друга в БД
+            userEventDbStorage.addUserEvent(user1Id, EventType.FRIEND.name(), Operation.REMOVE.name(), user2Id);
         } catch (Exception e) {
             log.warn("Ошибка при удалении друга в БД", e);
             throw new RuntimeException("Ошибка при удалении друга в БД", e);

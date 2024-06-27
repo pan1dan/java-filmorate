@@ -29,6 +29,7 @@ public class ReviewController {
     @ResponseStatus(HttpStatus.OK)
     public Review updateReview(@RequestBody @Valid Review review) {
         log.info("PUT /reviews");
+        log.info("Received review with userId: " + review.getUserId());
         return reviewService.updateReview(review);
     }
 
@@ -48,7 +49,7 @@ public class ReviewController {
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public List<Review> getReviews(@RequestParam(required = false) long filmId,
+    public List<Review> getReviews(@RequestParam(required = false) Long filmId,
                                    @RequestParam(defaultValue = "10") int count) {
         log.info("GET /reviews.?{} {}", filmId, count);
         return reviewService.getReviews(filmId, count);
