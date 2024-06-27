@@ -34,9 +34,9 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private static final LocalDate BIRTHDAY_OF_THE_MOVIE = LocalDate.of(1895, 12, 28);
-    GenresStorage genresStorage;
-    FilmRatingMpaStorage filmRatingMpaStorage;
-    DirectorStorage directorStorage;
+    private final GenresStorage genresStorage;
+    private final FilmRatingMpaStorage filmRatingMpaStorage;
+    private final DirectorStorage directorStorage;
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate,
                          @Qualifier("genresDbStorage") GenresStorage genresStorage,
@@ -101,6 +101,12 @@ public class FilmDbStorage implements FilmStorage {
                     insertFilmGenreSql.execute(new MapSqlParameterSource("film_id", filmId)
                             .addValue("genre_id", genre.getId()));
                 }
+
+                Set<Genre> sortedGenres = film.getGenres()
+                        .stream()
+                        .sorted((genre1, genre2) -> Integer.compare(genre1.getId(), genre2.getId()))
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
+                film.setGenres(sortedGenres);
             }
 
             if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
@@ -329,7 +335,7 @@ public class FilmDbStorage implements FilmStorage {
             LEFT JOIN film_rating_mpa AS r ON  f.mpa_id = r.mpa_id
             WHERE LOWER(f.name) LIKE LOWER('%' || ? || '%')
             GROUP BY f.name, f.film_id
-            ORDER BY film_id;
+            ORDER BY film_id DESC;
             """;
 
     private static final String FILMS_SEARCH_BY_DIRECTOR = """
@@ -347,7 +353,7 @@ public class FilmDbStorage implements FilmStorage {
             LEFT JOIN directors AS d ON fd.director_id = d.director_id
             WHERE LOWER(d.director_name) LIKE LOWER('%' || ? || '%')
             GROUP BY f.name, f.film_id
-            ORDER BY film_id;
+            ORDER BY film_id DESC;
             """;
 
     private static final String FILMS_SEARCH_BY_TITLE_AND_DIRECTOR = """
@@ -366,7 +372,7 @@ public class FilmDbStorage implements FilmStorage {
             WHERE LOWER(d.director_name) LIKE LOWER('%' || ? || '%')
                 OR LOWER(f.name) LIKE LOWER('%' || ? || '%')
             GROUP BY f.name, f.film_id
-            ORDER BY film_id;
+            ORDER BY film_id DESC;
             """;
 
     public List<Film> getSearchFilms(String query, SearchType searchType) {

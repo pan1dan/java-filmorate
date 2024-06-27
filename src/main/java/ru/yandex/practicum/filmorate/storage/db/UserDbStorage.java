@@ -135,10 +135,18 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User getUserById(Long userId) {
         try {
+            if (userId < 0) {
+                log.warn("Поле id не может быть отрицательным, переданное id = {}", userId);
+                throw new NotFoundException("Поле id не может быть отрицательным");
+            }
+
             String sql = "SELECT * " +
                     "FROM users " +
                     "WHERE user_id = ?";
             return jdbcTemplate.queryForObject(sql, this::mapRow, userId);
+        } catch (NotFoundException e) {
+            log.warn("Поле id не может быть отрицательным, переданное id = {}, ошибка = {}", userId, e);
+            throw new NotFoundException("Поле id не может быть отрицательным");
         } catch (Exception e) {
             log.warn("Ошибка при получении пользователя по id из БД", e);
             throw new NotFoundException("Ошибка при получении пользователя по id из БД");

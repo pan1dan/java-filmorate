@@ -3,9 +3,14 @@ package ru.yandex.practicum.filmorate.storage.db;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
+import ru.yandex.practicum.filmorate.storage.model.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.model.FilmRatingMpaStorage;
+import ru.yandex.practicum.filmorate.storage.model.GenresStorage;
 import ru.yandex.practicum.filmorate.storage.model.RecommendationStorage;
 
 import java.util.Collections;
@@ -18,6 +23,10 @@ import java.util.Optional;
 @Slf4j
 public class RecommendationDbStorage implements RecommendationStorage {
     private final NamedParameterJdbcTemplate jdbc;
+    private final JdbcTemplate jdbcTemplate;
+    private final GenresStorage genresStorage;
+    private final FilmRatingMpaStorage filmRatingMpaStorage;
+    private final DirectorStorage directorStorage;
 
     @Override
     public List<Film> getRecommendations(final long userId) {
@@ -26,7 +35,7 @@ public class RecommendationDbStorage implements RecommendationStorage {
         if (similarUserId.isEmpty()) {
             return Collections.emptyList();
         }
-        final String sqlQuery = "SELECT f.film_id, f.name, f.description, f.release_date, f.duration " +
+        final String sqlQuery = "SELECT f.* " +
                 "FROM films f " +
                 "JOIN users_likes_films ul ON f.film_id = ul.film_id " +
                 "WHERE ul.user_id = :similarUserId " +
@@ -36,14 +45,12 @@ public class RecommendationDbStorage implements RecommendationStorage {
                 "WHERE user_id = :userId" +
                 ") ";
 
-        return jdbc.query(sqlQuery, Map.of("userId", userId, "similarUserId", similarUserId.get()),
-                (rs, rowNum) -> Film.builder()
-                        .id(rs.getLong("film_id"))
-                        .name(rs.getString("name"))
-                        .description(rs.getString("description"))
-                        .releaseDate(rs.getDate("release_date").toLocalDate())
-                        .duration(rs.getInt("duration"))
-                        .build());
+        return jdbc.query(sqlQuery,
+                          Map.of("userId", userId, "similarUserId", similarUserId.get()),
+                          new FilmRowMapper(jdbcTemplate,
+                                            genresStorage,
+                                            filmRatingMpaStorage,
+                                            directorStorage));
     }
 
     private Optional<Long> getRecommenderUser(final long userId) {

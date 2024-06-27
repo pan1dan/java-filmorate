@@ -27,6 +27,8 @@ public class UsersLikesFilmsDbStorage implements UsersLikesFilmsStorage {
     private final GenresStorage genreDbStorage;
     private final FilmRatingMpaStorage filmDbRatingMpaStorage;
     private final DirectorStorage directorDbStorage;
+    private final FilmStorage filmDbStorage;
+    private final UserStorage userDbStorage;
 
     @Override
     public int getLikesCount(long filmId) {
@@ -56,6 +58,8 @@ public class UsersLikesFilmsDbStorage implements UsersLikesFilmsStorage {
     @Override
     public void deleteLikeFilm(long filmId, long userId) {
         try {
+            userDbStorage.getUserById(userId);
+            filmDbStorage.getFilmById(filmId);
             // Записываем событие по удалению лайка в БД
             userEventDbStorage.addUserEvent(userId, EventType.LIKE.name(), Operation.REMOVE.name(), filmId);
             // Выполняем удаление лайка.

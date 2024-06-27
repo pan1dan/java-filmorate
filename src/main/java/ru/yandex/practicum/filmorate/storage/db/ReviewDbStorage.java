@@ -18,6 +18,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -195,6 +196,10 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public List<Review> getPoolReviews(int count) {
+        Integer countReviews = jdbc.queryForObject("SELECT COUNT(*) FROM reviews", Integer.class);
+        if (countReviews == null || countReviews == 0) {
+            return new ArrayList<>();
+        }
         return jdbc.query(REQUEST_GET_ALL_REVIEWS_FOR_ALL_FILMS, this::mapRow, count);
     }
 
