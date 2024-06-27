@@ -22,4 +22,5 @@ public class Film {
     Set<UserLikesFilms> userLikesFilms;
     Set<Genre> genres;
     Mpa mpa;
+    Set<Director> directors;
 }

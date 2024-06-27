@@ -5,6 +5,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 @RestControllerAdvice
 public class ErrorHandler {
 
@@ -22,8 +25,11 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleOtherException(final Throwable e) {
-        return new ErrorResponse("Произошла непредвиденная ошибка: ", e.getMessage());
+    public ErrorResponse handleException(final Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return new ErrorResponse("500 ERROR: ", sw.toString());
     }
 
 }

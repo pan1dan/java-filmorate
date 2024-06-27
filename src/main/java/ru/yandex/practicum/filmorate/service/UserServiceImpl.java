@@ -1,11 +1,12 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.model.user.UserEvent;
+import ru.yandex.practicum.filmorate.service.interfaces.UserService;
+import ru.yandex.practicum.filmorate.storage.model.UserEventStorage;
 import ru.yandex.practicum.filmorate.storage.model.UserFriendsStorage;
 import ru.yandex.practicum.filmorate.storage.model.UserStorage;
 
@@ -14,73 +15,79 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class UserService {
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+@Slf4j
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+
     private final UserStorage userStorage;
     private final UserFriendsStorage userFriendsStorage;
+    private final UserEventStorage userEventDbStorage;
 
-    @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("userFriendsDbStorage") UserFriendsStorage userFriendsStorage) {
-        this.userStorage = userStorage;
-        this.userFriendsStorage = userFriendsStorage;
+    public void deleteUserById(long userId) {
+        log.info("Начало работы метода по удалению пользователя с id = {}", userId);
+        userStorage.deleteUserById(userId);
     }
 
+    @Override
     public List<User> getAllUsers() {
         log.info("Начало работы метода по получению всех пользователей");
-        return userStorage.getAllUsersFromStorage();
+        return userStorage.getAllUsers();
     }
 
+    @Override
     public User addNewUser(User user) {
         log.info("Начало работы метода по добавлению пользователя: {}", user);
-        return userStorage.addNewUserInStorage(user);
+        return userStorage.create(user);
     }
 
+    @Override
     public User updateUser(User newUser) {
         log.info("Начало работы метода по обновлению пользователя: {}", newUser);
-        return userStorage.updateUserInStorage(newUser);
+        return userStorage.update(newUser);
     }
 
+    @Override
     public User getUserById(Long userId) {
         log.info("Начало работы метода по получению пользователя по id = {}", userId);
-        return userStorage.getUserByIdFromStorage(userId);
+        return userStorage.getUserById(userId);
     }
 
-    public void addNewFriendIdToUserFriendList(Long userId,
-                                                  Long friendId) {
+    @Override
+    public void addFriend(Long userId, Long friendId) {
         log.info("Начало работы метода по добавлению в список друзей пользователя с id = {} другого " +
                 "пользователя с id = {}", userId, friendId);
-        userStorage.getUserByIdFromStorage(userId);
-        userStorage.getUserByIdFromStorage(friendId);
-        userFriendsStorage.addUserFriend(userId, friendId);
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+        userFriendsStorage.addFriend(userId, friendId);
     }
 
-    public void deleteFriendIdFromUserFriendList(Long userId,
-                                                      Long friendId) {
+    @Override
+    public void deleteFriend(Long userId, Long friendId) {
         log.info("Начало работы метода по удалению из списка друзей пользователя с id = {} другого " +
                 "пользователя с id = {}", userId, friendId);
-        userStorage.getUserByIdFromStorage(userId);
-        userStorage.getUserByIdFromStorage(friendId);
-        userFriendsStorage.deleteUserFriends(userId, friendId);
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+        userFriendsStorage.deleteFriend(userId, friendId);
     }
 
-    public List<User> getUserListFriends(Long userId) {
-        log.info("Возвращение листа друзей пользователя: {}",
-                userStorage.getUserByIdFromStorage(userId).getUserFriends().getFriendsIds());
-        return userStorage.getUserByIdFromStorage(userId).getUserFriends().getFriendsIds()
+    @Override
+    public List<User> getFriends(Long userId) {
+        log.info("Возвращение друзей пользователя с id = {}",
+                userStorage.getUserById(userId).getUserFriends().getFriendsIds());
+        return userStorage.getUserById(userId).getUserFriends().getFriendsIds()
                 .stream()
-                .map(userStorage::getUserByIdFromStorage)
+                .map(userStorage::getUserById)
                 .toList();
     }
 
-    public List<User> getCommonFriendListTwoUsers(Long userId,
-                                                  Long otherId) {
+    @Override
+    public List<User> getCommonFriends(Long userId, Long otherId) {
         log.info("Начало работы метода по поиску общих друзей: пользователь с id = {} и другой " +
                 "пользователь с id = {}", userId, otherId);
         log.debug("Получение пользователя из хранилища");
-        User user = userStorage.getUserByIdFromStorage(userId);
+        User user = userStorage.getUserById(userId);
         log.debug("Получение другого пользователя из хранилища");
-        User otherUser = userStorage.getUserByIdFromStorage(otherId);
+        User otherUser = userStorage.getUserById(otherId);
         log.info("Возвращение списка общих друзей пользователей");
         Set<Long> idsCommonFriends = user.getUserFriends().getFriendsIds()
                 .stream()
@@ -88,7 +95,15 @@ public class UserService {
                 .collect(Collectors.toSet());
         return idsCommonFriends
                 .stream()
-                .map(userStorage::getUserByIdFromStorage)
+                .map(userStorage::getUserById)
                 .toList();
+    }
+
+    @Override
+    public List<UserEvent> getEvents(long userId) {
+        // проверяем что такой пользователь есть в БД
+        userStorage.getUserById(userId);
+        // возвращаем все его события
+        return userEventDbStorage.getUserEvents(userId);
     }
 }

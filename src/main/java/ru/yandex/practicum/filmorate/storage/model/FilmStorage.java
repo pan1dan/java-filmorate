@@ -1,15 +1,22 @@
 package ru.yandex.practicum.filmorate.storage.model;
 
+import ru.yandex.practicum.filmorate.model.enums.SearchType;
 import ru.yandex.practicum.filmorate.model.film.Film;
 
 import java.util.List;
 
 public interface FilmStorage {
-    public List<Film> getAllFilmsFromStorage();
+    List<Film> getAllFilms();
 
-    public Film addNewFilmToStorage(Film film);
+    List<Film> getSearchFilms(String query, SearchType searchType);
 
-    public Film updateFilmInStorage(Film newFilm);
+    void deleteFilmById(long filmId);
 
-    public Film getFilmByIdFromStorage(Long filmId);
+    Film create(Film film);
+
+    Film update(Film newFilm);
+
+    Film getFilmById(Long filmId);
+
+    List<Film> getTopFilmsByLikes(Integer count, Integer genreId, Integer year);
 }

@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -11,9 +10,9 @@ import ru.yandex.practicum.filmorate.storage.model.FilmRatingMpaStorage;
 import java.util.List;
 
 @Service
+@Slf4j
 public class MpaService {
     private final FilmRatingMpaStorage filmRatingMpaStorage;
-    private static final Logger log = LoggerFactory.getLogger(MpaService.class);
 
     @Autowired
     public MpaService(@Qualifier("filmDbRatingMpaStorage") FilmRatingMpaStorage filmRatingMpaStorage) {
